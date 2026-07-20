@@ -105,7 +105,7 @@ export const featuredProducts: Product[] = [
   name: "Conitos (50 g)",
   description:
     "Gomitas suaves y frutales. Presentación de 50g.",
-  price: 900,
+  price: 800,
   image: "/productos/gomita-conitos.jpg",
   category: "gomitas",
 },
@@ -114,7 +114,7 @@ export const featuredProducts: Product[] = [
   name: "Anillos (50 g)",
   description:
     "Anillos frutales cubiertos de azúcar. 50g.",
-  price: 900,
+  price: 300,
   image: "/productos/gomita-anillos.jpg",
   category: "gomitas",
 },

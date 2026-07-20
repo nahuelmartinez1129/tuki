@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id          String     @id @default(cuid())
+  anonymousId String     @unique
+  phone       String?
+  googleId    String?
+  createdAt   DateTime   @default(now())
+  usosCupon   CuponUso[]
+  ruletas     Ruleta[]
+}
+
+model Ruleta {
+  id        String   @id @default(cuid())
+  premio    String
+  usuarioId String
+  createdAt DateTime @default(now())
+  utilizado Boolean  @default(false)
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+}
+
+model Premio {
+  id           String   @id @default(cuid())
+  nombre       String
+  tipo         String
+  valor        Int?
+  probabilidad Int      @default(10)
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
+model Cupon {
+  id           String     @id @default(cuid())
+  codigo       String     @unique
+  tipo         String
+  valor        Int?
+  maxUsos      Int
+  usosActuales Int        @default(0)
+  activo       Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  usos         CuponUso[]
+}
+
+model CuponUso {
+  id        String   @id @default(cuid())
+  cuponId   String
+  usuarioId String
+  createdAt DateTime @default(now())
+  cupon     Cupon    @relation(fields: [cuponId], references: [id])
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+}
+
+model HappyHour {
+  id          String    @id @default(cuid())
+  titulo      String
+  descripcion String
+  tipo        String
+  fechaInicio DateTime?
+  fechaFin    DateTime?
+  activo      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  valor       Int?
+}
+
+model Configuracion {
+  id            String   @id @default(cuid())
+  envio         Int      @default(800)
+  createdAt     DateTime @default(now())
+  abierto       Boolean  @default(true)
+  nombreNegocio String   @default("TUKI")
+  whatsapp      String   @default("5492291504531")
+}
+
+model Pedido {
+  id            String       @id @default(cuid())
+  numero        Int          @unique
+  nombre        String
+  telefono      String
+  direccion     String?
+  subtotal      Int
+  descuento     Int          @default(0)
+  envio         Int
+  total         Int
+  estado        EstadoPedido @default(PENDIENTE)
+  observaciones String?
+  createdAt     DateTime     @default(now())
+  happyHour     String?
+  premio        String?
+  items         PedidoItem[]
+}
+
+model PedidoItem {
+  id       String @id @default(cuid())
+  nombre   String
+  cantidad Int
+  precio   Int
+  pedidoId String
+  pedido   Pedido @relation(fields: [pedidoId], references: [id])
+}
+
+model Producto {
+  id             String   @id @default(cuid())
+  name           String
+  description    String
+  price          Int
+  compareAtPrice Int?
+  image          String
+  category       String
+  tags           String[]
+  stock          Int      @default(0)
+  activo         Boolean  @default(true)
+  isCombo        Boolean  @default(false)
+  orden          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+enum EstadoPedido {
+  PENDIENTE
+  CONFIRMADO
+  PREPARANDO
+  LISTO
+  EN_CAMINO
+  ENTREGADO
+  CANCELADO
+}

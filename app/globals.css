@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 176 45% 8%;
+    --foreground: 50 100% 98%;
+    --card: 175 40% 12%;
+    --card-foreground: 50 60% 97%;
+    --muted: 174 24% 18%;
+    --muted-foreground: 60 15% 72%;
+    --border: 174 28% 20%;
+    --input: 174 28% 20%;
+    --ring: 68 100% 46%;
+    --radius: 1.25rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+}
+
+@layer utilities {
+  /* Textura sutil de "cielo nocturno" para fondos oscuros */
+  .bg-night-texture {
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(198, 219, 0, 0.10), transparent 40%),
+      radial-gradient(circle at 85% 0%, rgba(245, 229, 122, 0.08), transparent 45%),
+      radial-gradient(circle at 50% 100%, rgba(27, 160, 145, 0.25), transparent 55%);
+  }
+
+  .text-outline-night {
+    -webkit-text-stroke: 1px rgba(11, 31, 30, 0.15);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

@@ -1,0 +1,9 @@
+-- AlterTable
+ALTER TABLE "Configuracion" ADD COLUMN     "abierto" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "aperturaFinSemana" TEXT NOT NULL DEFAULT '19:00',
+ADD COLUMN     "aperturaSemana" TEXT NOT NULL DEFAULT '19:00',
+ADD COLUMN     "cierreFinSemana" TEXT NOT NULL DEFAULT '04:00',
+ADD COLUMN     "cierreSemana" TEXT NOT NULL DEFAULT '02:00',
+ADD COLUMN     "modoManual" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "nombreNegocio" TEXT NOT NULL DEFAULT 'TUKI',
+ADD COLUMN     "whatsapp" TEXT NOT NULL DEFAULT '5492291504531';

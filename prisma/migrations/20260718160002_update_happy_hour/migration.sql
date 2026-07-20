@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "HappyHour" ADD COLUMN     "valor" INTEGER,
+ALTER COLUMN "fechaInicio" DROP NOT NULL,
+ALTER COLUMN "fechaFin" DROP NOT NULL,
+ALTER COLUMN "activo" SET DEFAULT false;

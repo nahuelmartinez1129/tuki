@@ -65,23 +65,31 @@ useEffect(() => {
   return () => clearInterval(interval);
 }, [secondsLeft]);
 
-  async function handleSpin() {
-const response = await fetch(
-  "/api/roulette/spin",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      anonymousId,
-    }),
+async function handleSpin() {
+  const response = await fetch(
+    "/api/roulette/spin",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        anonymousId,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    alert(
+      "Ya giraste la ruleta hoy. Volvé mañana."
+    );
+
+    return;
   }
-);
 
-const data = await response.json();
+  const data = await response.json();
 
-const prize = data.premio;
+  const prize = data.premio;
 const prizeIndex =
   ROULETTE_PRIZES.findIndex(
     (p) => p.id === prize.tipo

@@ -20,7 +20,38 @@ export async function POST(request: Request) {
       }
     );
   }
+const lastSpin =
+  await prisma.ruleta.findFirst({
+    where: {
+      usuarioId: user.id,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
+if (lastSpin) {
+  const diff =
+    Date.now() -
+    new Date(
+      lastSpin.createdAt
+    ).getTime();
+
+  const HOURS_24 =
+    24 * 60 * 60 * 1000;
+
+  if (diff < HOURS_24) {
+    return NextResponse.json(
+      {
+        error:
+          "Debes esperar 24 horas.",
+      },
+      {
+        status: 403,
+      }
+    );
+  }
+}
   const premios = await prisma.premio.findMany({
     where: {
       activo: true,

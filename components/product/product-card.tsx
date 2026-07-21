@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/hooks/use-cart";
 import type { Product } from "@/types/product";
+import { LOW_STOCK } from "@/lib/constants";
+
 
 const TAG_LABEL: Record<NonNullable<Product["tags"]>[number], string> = {
   nuevo: "Nuevo",
@@ -28,6 +30,9 @@ interface ProductCardProps {
 export function ProductCard({ product, className, fixedWidth }: ProductCardProps) {
   const { addItem } = useCart();
   const [justAdded, setJustAdded] = useState(false);
+
+  const stock =
+  product.stock ?? 999;
 
   const hasDiscount =
     typeof product.compareAtPrice === "number" &&
@@ -83,6 +88,45 @@ export function ProductCard({ product, className, fixedWidth }: ProductCardProps
           {product.description}
         </p>
 
+        {stock > 0 &&
+  stock <= LOW_STOCK && (
+    <div
+      className="
+        mt-2
+        inline-block
+        rounded-full
+        bg-red-500/20
+        px-3
+        py-1
+        text-xs
+        font-bold
+        text-red-300
+      "
+    >
+      {product.stock === 1
+        ? "🔥 ¡Última unidad!"
+        : `🔥 ¡Quedan solo ${product.stock}!`}
+    </div>
+)}
+
+{product.stock === 0 && (
+  <div
+    className="
+      mt-2
+      inline-block
+      rounded-full
+      bg-gray-500/20
+      px-3
+      py-1
+      text-xs
+      font-bold
+      text-gray-300
+    "
+  >
+    AGOTADO
+  </div>
+)}
+
         <div className="mt-auto flex items-center justify-between pt-3">
           <div className="flex flex-col">
             {hasDiscount && (
@@ -96,20 +140,31 @@ export function ProductCard({ product, className, fixedWidth }: ProductCardProps
           </div>
 
           <Button
-            size="icon"
-            variant="lime"
-            onClick={handleAddToCart}
-            className={cn(
-              "h-9 w-9 shrink-0 rounded-2xl active:scale-90",
-              justAdded && "animate-pop"
-            )}
-            aria-label={`Agregar ${product.name} al carrito`}
-          >
-            {justAdded ? (
-              <Check className="h-5 w-5" strokeWidth={3} />
-            ) : (
-              <Plus className="h-5 w-5" strokeWidth={3} />
-            )}
+  size="icon"
+  variant="lime"
+  disabled={product.stock === 0}
+  onClick={handleAddToCart}
+  className={cn(
+    "h-9 w-9 shrink-0 rounded-2xl active:scale-90",
+    justAdded && "animate-pop"
+  )}
+  aria-label={`Agregar ${product.name} al carrito`}
+>
+          {product.stock === 0 ? (
+  <span className="text-[10px]">
+    X
+  </span>
+) : justAdded ? (
+  <Check
+    className="h-5 w-5"
+    strokeWidth={3}
+  />
+) : (
+  <Plus
+    className="h-5 w-5"
+    strokeWidth={3}
+  />
+)}
           </Button>
         </div>
       </div>

@@ -9,7 +9,7 @@ export const BRAND = {
   tagline: "La noche pide Tuki.",
   whatsappNumber: "5491100000000", // TODO: reemplazar por número real
 } as const;
-
+export const LOW_STOCK = 5;
 export const BRAND_MESSAGES = {
   heroQuestion: "¿Pintó algo dulce?",
   heroSub: "La noche pide Tuki.",

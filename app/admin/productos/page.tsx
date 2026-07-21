@@ -21,7 +21,19 @@ export default function ProductosPage() {
   );
 
 const [form, setForm] =
-  useState({
+  useState<{
+    name: string;
+    description: string;
+    price: number;
+    compareAtPrice: number;
+    image: string;
+    category: string;
+    stock: number;
+    tags: string[];
+    activo: boolean;
+    isCombo: boolean;
+    orden: number;
+  }>({
     name: "",
     description: "",
     price: 0,
@@ -183,16 +195,17 @@ async function eliminar(
 </button>
 </div>
 
-<div
-  className="
-    mt-6
-    max-w-2xl
-    rounded-3xl
-    bg-tuki-night-soft
-    p-8
-    space-y-4
-  "
->
+{showForm && (
+  <div
+    className="
+      mt-6
+      max-w-2xl
+      rounded-3xl
+      bg-tuki-night-soft
+      p-8
+      space-y-4
+    "
+  >
   <div>
     <label className="mb-2 block text-tuki-cream">
       Nombre
@@ -274,6 +287,34 @@ async function eliminar(
       "
     />
   </div>
+  <div>
+  <label className="mb-2 block text-tuki-cream">
+    Precio anterior (opcional)
+  </label>
+
+  <input
+    type="number"
+    value={form.compareAtPrice}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        compareAtPrice: Number(
+          e.target.value
+        ),
+      })
+    }
+    className="
+      w-full
+      rounded-2xl
+      bg-tuki-night
+      p-4
+      text-tuki-cream
+      outline-none
+      border
+      border-white/10
+    "
+  />
+</div>
 
   <div>
     <label className="mb-2 block text-tuki-cream">
@@ -385,6 +426,35 @@ async function eliminar(
     />
   </div>
 
+  <div>
+  <label className="mb-2 block text-tuki-cream">
+    Tags (separados por coma)
+  </label>
+
+  <input
+    value={form.tags.join(",")}
+    placeholder="nuevo,top-ventas"
+    onChange={(e) =>
+      setForm({
+        ...form,
+        tags: e.target.value
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+      })
+    }
+    className="
+      w-full
+      rounded-2xl
+      bg-tuki-night
+      p-4
+      text-tuki-cream
+      border
+      border-white/10
+    "
+  />
+</div>
+
   <div className="flex gap-6">
     <label className="flex items-center gap-2 text-tuki-cream">
       <input
@@ -434,8 +504,42 @@ async function eliminar(
       ? "Actualizar producto"
       : "Guardar producto"}
   </button>
-</div>
 
+  <button
+  onClick={() => {
+    setShowForm(false);
+
+    setEditingId(null);
+
+    setForm({
+      name: "",
+      description: "",
+      price: 0,
+      compareAtPrice: 0,
+      image: "",
+      category: "chocolates",
+      stock: 0,
+      tags: [],
+      activo: true,
+      isCombo: false,
+      orden: 0,
+    });
+  }}
+  className="
+    mt-3
+    w-full
+    rounded-2xl
+    border
+    border-white/10
+    py-4
+    font-bold
+    text-tuki-cream
+  "
+>
+  Cancelar
+</button>
+</div>
+)}
       <div className="mt-10 space-y-4">
         {productos.map((p) => (
           <div
@@ -462,9 +566,52 @@ async function eliminar(
                   ${p.price}
                 </p>
 
+
+  <p className="text-sm text-tuki-cream/60">
+    Antes:
+    {p.compareAtPrice
+      ? ` $${p.compareAtPrice}`
+      : " -"}
+  </p>
+
                 <p className="text-sm text-tuki-cream/60">
                   Stock: {p.stock}
                 </p>
+
+                <p className="text-sm text-tuki-cream/60">
+  Categoría: {p.category}
+</p>
+
+<p
+  className={`text-sm ${
+    p.activo
+      ? "text-green-400"
+      : "text-red-400"
+  }`}
+>
+  {p.activo
+    ? "● Activo"
+    : "● Inactivo"}
+</p>
+<p className="text-sm text-purple-400">
+  {p.isCombo
+    ? "🎁 Combo"
+    : "Producto individual"}
+</p>
+
+<p className="text-sm text-tuki-cream/60">
+  Tags:
+  {p.tags.length
+    ? ` ${p.tags.join(", ")}`
+    : " -"}
+</p>
+
+                <p className="text-sm text-tuki-cream/60">
+  Tags:
+  {p.tags.length > 0
+    ? ` ${p.tags.join(", ")}`
+    : " -"}
+</p>
 
                 <div className="mt-4 flex gap-2">
   <button

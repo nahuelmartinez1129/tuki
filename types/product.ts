@@ -16,7 +16,14 @@ export interface Product {
   compareAtPrice?: number;
   image: string;
   category: ProductCategory;
-  tags?: ("nuevo" | "top-ventas" | "picante" | "misterioso" | "recomendado")[];
+  stock?: number;
+  tags?: (
+    | "nuevo"
+    | "top-ventas"
+    | "picante"
+    | "misterioso"
+    | "recomendado"
+  )[];
   isCombo?: boolean;
 }
 

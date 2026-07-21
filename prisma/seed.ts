@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-
+import { featuredProducts } from "@/lib/data/products";
 const prisma = new PrismaClient();
 
 async function main() {
@@ -113,6 +113,46 @@ await prisma.happyHour.createMany({
     },
   ],
 });
+
+await prisma.producto.deleteMany();
+
+for (const product of featuredProducts) {
+  await prisma.producto.create({
+    data: {
+      name: product.name,
+
+      description:
+        product.description,
+
+      price:
+        product.price,
+
+      compareAtPrice:
+        product.compareAtPrice,
+
+      image:
+        product.image,
+
+      category:
+        product.category,
+
+      tags:
+        product.tags ?? [],
+
+      stock:
+        product.stock ?? 20,
+
+      activo: true,
+
+      isCombo:
+        product.isCombo ??
+        false,
+
+      orden: 0,
+    },
+  });
+}
+
 
   console.log("Seed ejecutado correctamente.");
 }

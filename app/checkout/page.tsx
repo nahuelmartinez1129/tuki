@@ -59,7 +59,7 @@ export default function CheckoutPage() {
   useAnonymousUser();
 
 const [reward, setReward] =
-  useState<any>(null);
+  useState<{ premio?: string; id?: string } | null>(null);
 
   const [happyHour, setHappyHour] =
   useState<any>(null);
@@ -94,7 +94,7 @@ const caja = items.find(
       .includes("caja")
 );
 
-if (reward) {
+if (reward?.premio) {
   if (reward.premio === "ENVIO_GRATIS") {
     delivery = 0;
   }
@@ -267,7 +267,7 @@ useEffect(() => {
    
 
 
-if (reward) {
+if (reward?.premio) {
   await fetch(
     "/api/rewards/use",
     {
@@ -648,11 +648,11 @@ setTimeout(() => {
   </span>
 )}
   </div>
-{(reward || happyHour) && (
+{(reward?.premio || happyHour) && (
   <div className="rounded-2xl border border-tuki-lime/20 bg-tuki-night p-4">
    
 
- {reward && (
+ {reward?.premio && (
   <>
     <p className="font-display text-xs font-bold uppercase text-tuki-lime">
       PREMIO DE LA RULETA

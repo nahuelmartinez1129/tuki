@@ -13,17 +13,11 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  compareAtPrice?: number;
+  compareAtPrice?: number | null;
   image: string;
-  category: ProductCategory;
+  category: string;
   stock?: number;
-  tags?: (
-    | "nuevo"
-    | "top-ventas"
-    | "picante"
-    | "misterioso"
-    | "recomendado"
-  )[];
+  tags?: string[];
   isCombo?: boolean;
 }
 

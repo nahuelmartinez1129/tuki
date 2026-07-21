@@ -211,6 +211,15 @@ lg:text-5xl font-bold text-tuki-cream">
                 <strong>Dirección:</strong>{" "}
                 {p.direccion}
               </p>
+
+              <p className="text-tuki-cream/70">
+  <strong>Método de pago:</strong>{" "}
+  {p.metodoPago === "efectivo"
+    ? "💵 Efectivo"
+    : p.metodoPago === "transferencia"
+    ? "🏦 Transferencia"
+    : "No especificado"}
+</p>
             </div>
 
             <div className="mt-4">

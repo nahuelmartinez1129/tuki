@@ -1,9 +1,25 @@
 import { ChevronRight } from "lucide-react";
-
+import type { Product } from "@/types/product";
 import { ProductCard } from "@/components/product/product-card";
-import { featuredProducts } from "@/lib/data/products";
-
-export function FeaturedProducts() {
+import { prisma } from "@/lib/prisma";
+export async function FeaturedProducts() {
+  const products =
+    (await prisma.producto.findMany({
+      where: {
+        activo: true,
+      },
+      orderBy: {
+        orden: "asc",
+      },
+      take: 8,
+    })) as Product[];
+console.log("PRODUCTOS FEATURED:");
+console.log(
+  products.map((p) => ({
+    nombre: p.name,
+    precio: p.price,
+  }))
+);
   return (
     <section id="destacados" className="bg-background py-14">
       <div className="container">
@@ -26,7 +42,9 @@ export function FeaturedProducts() {
         </div>
 
         <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-4 pb-2 no-scrollbar sm:mx-0 sm:grid sm:snap-none sm:grid-cols-3 sm:gap-5 sm:overflow-visible sm:px-0 lg:grid-cols-4">
-          {featuredProducts.map((product) => (
+       {products
+  
+  .map((product) => (
             <ProductCard key={product.id} product={product} fixedWidth />
           ))}
         </div>

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { featuredProducts } from "@/lib/data/products";
 const prisma = new PrismaClient();

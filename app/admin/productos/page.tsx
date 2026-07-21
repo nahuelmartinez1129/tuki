@@ -52,12 +52,14 @@ const [form, setForm] =
       await fetch(
         "/api/productos"
       );
-
+console.log("STATUS:", response.status);
     const data =
       await response.json();
+      console.log("DATA:", data);
 
     setProductos(data);
   }
+  console.log("ESTADO:", productos);
 
   useEffect(() => {
     load();
@@ -105,50 +107,30 @@ const [form, setForm] =
   setEditingId(null);
 }
 
-function editar(
-  producto: any
-) {
+function editar(producto: any) {
+  console.log(producto);
+
   setForm({
-    name:
-      producto.name,
-
-    description:
-      producto.description,
-
-    price:
-      producto.price,
-
-    compareAtPrice:
-      producto.compareAtPrice ??
-      0,
-
-    image:
-      producto.image,
-
-    category:
-      producto.category,
-
-    stock:
-      producto.stock,
-
-    tags:
-      producto.tags,
-
-    activo:
-      producto.activo,
-
-    isCombo:
-      producto.isCombo,
-
-    orden:
-      producto.orden,
+    name: producto.name,
+    description: producto.description,
+    price: producto.price,
+    compareAtPrice: producto.compareAtPrice ?? 0,
+    image: producto.image,
+    category: producto.category,
+    stock: producto.stock,
+    tags: producto.tags ?? [],
+    activo: producto.activo,
+    isCombo: producto.isCombo,
+    orden: producto.orden,
   });
 
-  setEditingId(
-    producto.id
-  );
-
+  setEditingId(producto.id);
   setShowForm(true);
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
 }
 async function eliminar(
   id: string
@@ -432,7 +414,7 @@ async function eliminar(
   </label>
 
   <input
-    value={form.tags.join(",")}
+    value={(form.tags ?? []).join(",")}
     placeholder="nuevo,top-ventas"
     onChange={(e) =>
       setForm({

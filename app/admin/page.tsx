@@ -198,6 +198,8 @@ xl:grid-cols-4 gap-6">
             <p className="text-sm text-tuki-cream/60">
               {pedido.nombre}
             </p>
+
+          
           </div>
 
           <div className="text-right">

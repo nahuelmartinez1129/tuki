@@ -93,23 +93,41 @@ export function CartProvider({ children }: { children: ReactNode }) {
     (product: AddableProduct, quantity = 1) => {
       setItems((prev) => {
         const existing = prev.find((item) => item.id === product.id);
-        if (existing) {
-          return prev.map((item) =>
-            item.id === product.id
-              ? { ...item, quantity: item.quantity + quantity }
-              : item
-          );
+       if (existing) {
+  if (
+    existing.quantity +
+      quantity >
+    (product.stock ?? 999)
+  ) {
+    pushToast(
+      `Solo quedan ${product.stock} unidades de ${product.name}`
+    );
+
+    return prev;
+  }
+
+  return prev.map((item) =>
+    item.id === product.id
+      ? {
+          ...item,
+          quantity:
+            item.quantity +
+            quantity,
         }
+      : item
+  );
+}
         return [
           ...prev,
-          {
-            id: product.id,
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            image: product.image,
-            quantity,
-          },
+         {
+  id: product.id,
+  name: product.name,
+  description: product.description,
+  price: product.price,
+  image: product.image,
+  stock: product.stock ?? 0,
+  quantity,
+},
         ];
       });
       pushToast(`¡${product.name} agregado!`);
@@ -121,11 +139,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
-  const incrementItem = useCallback((id: string) => {
+  const incrementItem =
+  useCallback((id: string) => {
     setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
+      prev.map((item) => {
+        if (item.id !== id)
+          return item;
+
+        if (
+          item.quantity >=
+          (item.stock ?? 999)
+        ) {
+          return item;
+        }
+
+        return {
+          ...item,
+          quantity:
+            item.quantity + 1,
+        };
+      })
     );
   }, []);
 

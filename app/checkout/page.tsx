@@ -45,12 +45,7 @@ const PAYMENT_METHODS: {
     helper: "Te pasamos el alias al confirmar",
     icon: Landmark,
   },
-  {
-    value: "mercado-pago",
-    label: "Mercado Pago",
-    helper: "Próximamente",
-    icon: Wallet,
-  },
+  
 ];
 
 
@@ -297,31 +292,29 @@ const response = await fetch(
     },
 
     body: JSON.stringify({
-      nombre: customerName,
-      telefono: phone,
-      direccion: address,
+  nombre: customerName,
+  telefono: phone,
+  direccion: address,
 
-      subtotal,
-      descuento: discount,
-      envio: delivery,
+  subtotal,
+  descuento: discount,
+  envio: delivery,
 
-      premio: reward?.premio,
-      happyHour: happyHour?.titulo,
+  premio: reward?.premio,
+  happyHour: happyHour?.titulo,
 
-      total,
+  metodoPago: paymentMethod,
 
-      observaciones: notes,
+  total,
 
-      items: items.map(
-        (item) => ({
-          nombre: item.name,
-          cantidad:
-            item.quantity,
-          precio:
-            item.price,
-        })
-      ),
-    }),
+  observaciones: notes,
+
+  items: items.map((item) => ({
+    nombre: item.name,
+    cantidad: item.quantity,
+    precio: item.price,
+  })),
+}),
   }
 );
 

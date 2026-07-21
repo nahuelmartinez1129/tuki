@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { MenuClient } from "@/components/menu/menu-client";
+import { NextResponse } from "next/server";
 
-export default async function MenuPage() {
-  const products =
+export async function GET() {
+  const productos =
     await prisma.producto.findMany({
       where: {
         activo: true,
@@ -12,9 +12,7 @@ export default async function MenuPage() {
       },
     });
 
-  return (
-    <MenuClient
-      products={products}
-    />
+  return NextResponse.json(
+    productos
   );
 }

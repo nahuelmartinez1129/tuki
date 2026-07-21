@@ -14,14 +14,19 @@ export interface CartItem {
   price: number;
   image: string;
   quantity: number;
+  stock: number;
 }
 
 /** Cualquier producto del catálogo se puede agregar al carrito. */
 export type AddableProduct = Pick<
   Product,
-  "id" | "name" | "description" | "price" | "image"
+  "id" |
+  "name" |
+  "description" |
+  "price" |
+  "image" |
+  "stock"
 >;
-
 export type PaymentMethod = "efectivo" | "transferencia" | "mercado-pago";
 
 /**
@@ -38,4 +43,5 @@ export interface CheckoutOrder {
   subtotal: number;
   total: number;
   reward?: string;
+  
 }

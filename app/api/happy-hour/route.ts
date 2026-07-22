@@ -27,6 +27,7 @@ export async function GET(
         activo: true,
       },
     });
+    
 
   console.log(
     "HAPPY HOUR ENCONTRADO:",

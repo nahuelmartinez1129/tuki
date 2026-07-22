@@ -92,76 +92,75 @@ const caja = items.find(
       .includes("caja")
 );
 
-if (reward?.premio) {
+// HAPPY HOUR
+
+if (happyHour) {
+  if (happyHour.tipo === "ENVIO_GRATIS") {
+    delivery = 0;
+  }
+
+  if (happyHour.tipo === "DESCUENTO") {
+    discount +=
+      subtotal *
+      (happyHour.valor / 100);
+  }
+
+  if (happyHour.tipo === "CUPON_1500") {
+    discount += happyHour.valor;
+  }
+
+  if (happyHour.tipo === "GOMITAS") {
+    regalo +=
+      "🍬 Gomitas Gratis (Happy Hour) ";
+  }
+
+  if (
+    happyHour.tipo === "CAJA_10" &&
+    caja
+  ) {
+    discount +=
+      caja.price * 0.1;
+  }
+}
+
+// RULETA
+
+if (
+  reward?.premio &&
+  reward.premio !== "SIN_PREMIO"
+) {
   if (reward.premio === "ENVIO_GRATIS") {
     delivery = 0;
   }
 
   if (reward.premio === "DESCUENTO") {
-    discount = subtotal * 0.1;
+    discount += subtotal * 0.1;
   }
 
   if (reward.premio === "CUPON_1500") {
-    discount = 1500;
+    discount += 1500;
   }
 
   if (reward.premio === "GOMITAS") {
-    regalo = "🍬 Gomitas gratis";
+    regalo +=
+      "🍬 Gomitas Gratis ";
   }
 
   if (
     reward.premio === "CAJA_10" &&
     caja
   ) {
-    discount =
-      caja.price * 0.1;
-  }
-} else if (happyHour) {
-  if (
-    happyHour.tipo ===
-    "ENVIO_GRATIS"
-  ) {
-    delivery = 0;
-  }
-
-  if (
-    happyHour.tipo ===
-    "DESCUENTO"
-  ) {
-    discount =
-      subtotal *
-      (happyHour.valor / 100);
-  }
-
-  if (
-    happyHour.tipo ===
-    "CUPON_1500"
-  ) {
-    discount =
-      happyHour.valor;
-  }
-
-  if (
-    happyHour.tipo ===
-    "GOMITAS"
-  ) {
-    regalo =
-      "🍬 Gomitas Gratis (Happy Hour)";
-  }
-
-  if (
-    happyHour.tipo ===
-    "CAJA_10" &&
-    caja
-  ) {
-    discount =
+    discount +=
       caja.price * 0.1;
   }
 }
 const total =
-  subtotal -
-  discount +
-  delivery;
+  Math.max(
+    0,
+    subtotal -
+      discount +
+      delivery
+  );
 
 
 
@@ -207,10 +206,11 @@ useEffect(() => {
 
   loadConfig();
 
-  const interval = setInterval(
-    loadConfig,
-    1000
-  );
+  const interval =
+    setInterval(
+      loadConfig,
+      10000
+    );
 
   return () =>
     clearInterval(interval);
@@ -277,7 +277,10 @@ useEffect(() => {
    
 
 
-if (reward?.premio) {
+if (
+  reward?.premio &&
+  reward.premio !== "SIN_PREMIO"
+) {
   await fetch(
     "/api/rewards/use",
     {

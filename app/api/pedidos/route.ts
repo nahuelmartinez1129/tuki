@@ -91,6 +91,10 @@ const happyHour =
     },
   });
   console.log(
+  "HAPPY HOUR AL CREAR PEDIDO:",
+  happyHour
+);
+  console.log(
   "HAPPY HOUR BACKEND:",
   happyHour
 );
@@ -143,6 +147,16 @@ const total =
       envio,
     0
   );
+  console.log(
+  "TOTAL FINAL:",
+  {
+    subtotal:
+      body.subtotal,
+    descuento,
+    envio,
+    total,
+  }
+);
   console.log(
   "HAPPY HOUR BACKEND:",
   happyHour

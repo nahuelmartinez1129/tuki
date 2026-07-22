@@ -14,8 +14,11 @@ const [happyHour, setHappyHour] =
 useEffect(() => {
   async function load() {
     const response = await fetch(
-      "/api/happy-hour"
-    );
+  "/api/happy-hour",
+  {
+    cache: "no-store",
+  }
+);
 
     const data =
       await response.json();
@@ -26,7 +29,7 @@ useEffect(() => {
   load();
 
   const interval =
-    setInterval(load, 2000);
+  setInterval(load, 10000);
 
   return () =>
     clearInterval(interval);

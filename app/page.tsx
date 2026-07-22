@@ -11,7 +11,10 @@ import { NightSection } from "@/components/home/night-section";
 import { MysteryBoxSection } from "@/components/home/mystery-box";
 import { RouletteSection } from "@/components/home/roulette-section";
 import { WhatsappCta } from "@/components/home/whatsapp-cta";
+import { RegisterGate } from "@/components/auth/register-gate";
 import { StatusBanner }
+
+
 from "@/components/home/status-banner";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +24,7 @@ export default function Home() {
 
   return (
     <>
+     <RegisterGate />
       <Navbar />
   <StatusBanner />
       <HappyHour />

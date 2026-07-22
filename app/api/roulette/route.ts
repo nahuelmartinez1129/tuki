@@ -49,24 +49,38 @@ const lastSpin =
     });
   }
 
-  const diff =
-    Date.now() - new Date(lastSpin.createdAt).getTime();
+  const now = new Date();
 
-  const HOURS_24 = 24 * 60 * 60 * 1000;
-  //const HOURS_24 = 10 * 1000; // 10 segundos para pruebas
+const nextReset = new Date(
+  lastSpin.createdAt
+);
 
-  if (diff >= HOURS_24) {
-    return NextResponse.json({
-      canSpin: true,
-    });
-  }
+nextReset.setDate(
+  nextReset.getDate() + 1
+);
+
+nextReset.setHours(
+  21,
+  0,
+  0,
+  0
+);
+
+if (now >= nextReset) {
+  return NextResponse.json({
+    canSpin: true,
+  });
+}
 
   return NextResponse.json({
     canSpin: false,
     prize: lastSpin.premio,
     secondsLeft: Math.floor(
-      (HOURS_24 - diff) / 1000
-    ),
+  (
+    nextReset.getTime() -
+    now.getTime()
+  ) / 1000
+),
   });
 }
 

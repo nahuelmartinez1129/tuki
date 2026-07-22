@@ -90,6 +90,10 @@ const happyHour =
       activo: true,
     },
   });
+  console.log(
+  "HAPPY HOUR BACKEND:",
+  happyHour
+);
 
 if (happyHour) {
   if (
@@ -139,6 +143,10 @@ const total =
       envio,
     0
   );
+  console.log(
+  "HAPPY HOUR BACKEND:",
+  happyHour
+);
 
 for (const item of body.items) {
   const producto =
@@ -198,7 +206,8 @@ for (const item of body.items) {
           envio,
 
           premio: body.premio,
-happyHour: body.happyHour,
+happyHour:
+  happyHour?.titulo ?? null,
 
         total:
           total,

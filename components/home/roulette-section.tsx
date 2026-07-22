@@ -14,8 +14,9 @@ import {
 
 import { formatCountdown } from "@/hooks/use-countdown";
 import { useAnonymousUser } from "@/hooks/useAnonymousUser";
-
-
+import { useUser } from "@/hooks/useUser";
+import { RegisterModal }
+from "@/components/auth/register-modal";
 const SEGMENT_ANGLE = 360 / ROULETTE_PRIZES.length;
 const SPIN_DURATION_MS = 4200;
 
@@ -23,16 +24,19 @@ const SPIN_DURATION_MS = 4200;
 
 export function RouletteSection() {
     const anonymousId = useAnonymousUser();
+    const { phone } =
+  useUser();
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   
-
+const [showRegisterModal, setShowRegisterModal] =
+  useState(false);
   const [result, setResult] = useState<RoulettePrize | null>(null);
 
 const [canSpin, setCanSpin] = useState(true);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [loading, setLoading] = useState(true);
-
+  
     useEffect(() => {
   async function checkRoulette() {
     if (!anonymousId) return;
@@ -66,6 +70,18 @@ useEffect(() => {
 }, [secondsLeft]);
 
 async function handleSpin() {
+  const phone =
+  localStorage.getItem(
+    "tuki_user_phone"
+  );
+
+if (!phone) {
+  setShowRegisterModal(
+    true
+  );
+
+  return;
+}
   const response = await fetch(
     "/api/roulette/spin",
     {
@@ -75,6 +91,7 @@ async function handleSpin() {
       },
       body: JSON.stringify({
         anonymousId,
+        phone,
       }),
     }
   );
@@ -166,7 +183,8 @@ setSecondsLeft(24 * 60 * 60);
   ) : (
     <div className="rounded-2xl bg-white/5 px-4 py-3">
       <p className="text-xs text-tuki-cream/60">
-        Volvés a girar en
+       🎰 Próxima ruleta:
+Mañana a las 21:00
       </p>
 
       <p className="font-display text-lg font-extrabold tabular-nums text-tuki-yellow">
@@ -200,6 +218,14 @@ setSecondsLeft(24 * 60 * 60);
           onClose={() => setResult(null)}
         />
       )}
+      <RegisterModal
+  open={showRegisterModal}
+  onClose={() =>
+    setShowRegisterModal(
+      false
+    )
+  }
+/>
     </section>
   );
 }

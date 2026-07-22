@@ -102,7 +102,7 @@ await prisma.happyHour.createMany({
     {
       titulo: "Hora Tuki",
       descripcion:
-        "Te regalamos unas gomitas con tu compra hasta las 22:30 hs.",
+        "Te regalamos unos caramelos con tu compra hasta las 22:30 hs.",
       tipo: "GOMITAS",
     },
     {

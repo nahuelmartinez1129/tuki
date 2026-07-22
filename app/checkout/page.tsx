@@ -26,7 +26,7 @@ import { formatPrice } from "@/lib/format";
 import { useCart } from "@/hooks/use-cart";
 import type { CheckoutOrder, PaymentMethod } from "@/types/cart";
 
-const anonymousId = useAnonymousUser();
+
 const PAYMENT_METHODS: {
   value: PaymentMethod;
   label: string;
@@ -59,8 +59,11 @@ const [reward, setReward] =
   const [happyHour, setHappyHour] =
   useState<any>(null);
 
+const [loadingHappyHour, setLoadingHappyHour] =
+  useState(true);
+
 const [abierto, setAbierto] =
-    useState(true);
+  useState(true);
 
   const router = useRouter();
   const { items, subtotal, clearCart } = useCart();
@@ -216,14 +219,26 @@ useEffect(() => {
 
 useEffect(() => {
   async function loadHappyHour() {
-    const response = await fetch(
-      "/api/happy-hour"
-    );
+    try {
+      const response = await fetch(
+        "/api/happy-hour",
+        {
+          cache: "no-store",
+        }
+      );
 
-    const data =
-      await response.json();
+      const data =
+        await response.json();
 
-    setHappyHour(data);
+      console.log(
+        "HAPPY HOUR:",
+        data
+      );
+
+      setHappyHour(data);
+    } finally {
+      setLoadingHappyHour(false);
+    }
   }
 
   loadHappyHour();
@@ -322,9 +337,25 @@ const response = await fetch(
 const pedido =
   await response.json();
 
-router.push(
-  `/pedido-exitoso/${pedido.numero}`
+console.log(
+  "PEDIDO RECIBIDO:",
+  pedido
 );
+
+if (
+  !response.ok ||
+  !pedido.numero
+) {
+  alert(
+    pedido.error ??
+      "No se pudo generar el pedido."
+  );
+
+  return;
+}
+
+window.location.href =
+  `/pedido-exitoso/${pedido.numero}`;
 
 setTimeout(() => {
   clearCart();
@@ -682,8 +713,15 @@ setTimeout(() => {
   </div>
 </div>
             </section>
-
-            <Button disabled={!abierto} type="submit" variant="lime" size="lg" className="w-full">
+{loadingHappyHour && (
+  <p className="text-center text-sm text-tuki-cream">
+    Cargando promociones...
+  </p>
+)}
+            <Button disabled={
+  !abierto ||
+  loadingHappyHour
+} type="submit" variant="lime" size="lg" className="w-full">
               Confirmar pedido
             </Button>
 

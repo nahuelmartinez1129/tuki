@@ -22,14 +22,29 @@ export async function POST(
 ) {
   const body =
     await request.json();
-    await prisma.usuario.updateMany({
-  where: {
-    anonymousId: body.anonymousId,
-  },
-  data: {
-    phone: body.telefono,
-  },
-});
+    
+   console.log(
+  "ANONYMOUS ID:",
+  body.anonymousId
+);
+
+console.log(
+  "BODY:",
+  body
+);
+
+if (body.anonymousId) {
+  await prisma.usuario.updateMany({
+    where: {
+      anonymousId:
+        body.anonymousId,
+    },
+    data: {
+      phone:
+        body.telefono,
+    },
+  });
+}
     const configuracion =
   await prisma.configuracion.findFirst();
 
@@ -54,6 +69,76 @@ if (!configuracion?.abierto) {
 
   const numero =
     (ultimoPedido?.numero ?? 0) + 1;
+
+    let descuento =
+  body.descuento;
+
+let envio =
+  body.envio;
+
+const caja =
+  body.items.find(
+    (item: any) =>
+      item.nombre
+        .toLowerCase()
+        .includes("caja")
+  );
+
+const happyHour =
+  await prisma.happyHour.findFirst({
+    where: {
+      activo: true,
+    },
+  });
+
+if (happyHour) {
+  if (
+    happyHour.tipo ===
+    "ENVIO_GRATIS"
+  ) {
+    envio = 0;
+  }
+
+  if (
+    happyHour.tipo ===
+    "DESCUENTO"
+  ) {
+    descuento =
+      body.subtotal *
+      ((happyHour.valor ?? 0) / 100);
+  }
+
+  if (
+    happyHour.tipo ===
+    "CUPON_1500"
+  ) {
+    descuento =
+      happyHour.valor;
+  }
+
+  if (
+    happyHour.tipo ===
+    "CAJA_10" &&
+    caja
+  ) {
+    descuento =
+      caja.precio * 0.1;
+  }
+}
+if (
+  descuento >
+  body.subtotal
+) {
+  descuento =
+    body.subtotal;
+}
+const total =
+  Math.max(
+    body.subtotal -
+      descuento +
+      envio,
+    0
+  );
 
 for (const item of body.items) {
   const producto =
@@ -107,16 +192,16 @@ for (const item of body.items) {
           body.subtotal,
 
         descuento:
-          body.descuento,
+          descuento,
 
         envio:
-          body.envio,
+          envio,
 
           premio: body.premio,
 happyHour: body.happyHour,
 
         total:
-          body.total,
+          total,
 
         observaciones:
           body.observaciones,
@@ -182,7 +267,12 @@ for (const item of body.items) {
   }
 }
 
-  return NextResponse.json(
-    pedido
-  );
+  console.log(
+  "PEDIDO CREADO:",
+  pedido
+);
+
+return NextResponse.json(
+  pedido
+);
 }

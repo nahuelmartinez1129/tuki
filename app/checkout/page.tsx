@@ -26,7 +26,7 @@ import { formatPrice } from "@/lib/format";
 import { useCart } from "@/hooks/use-cart";
 import type { CheckoutOrder, PaymentMethod } from "@/types/cart";
 
-
+const anonymousId = useAnonymousUser();
 const PAYMENT_METHODS: {
   value: PaymentMethod;
   label: string;
@@ -292,6 +292,7 @@ const response = await fetch(
     },
 
     body: JSON.stringify({
+       anonymousId,
   nombre: customerName,
   telefono: phone,
   direccion: address,

@@ -94,7 +94,7 @@ model Pedido {
   happyHour     String?
   premio        String?
   items         PedidoItem[]
-  metodoPago String
+  metodoPago String?
 }
 
 model PedidoItem {

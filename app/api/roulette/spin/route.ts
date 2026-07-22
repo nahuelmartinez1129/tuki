@@ -20,11 +20,19 @@ export async function POST(request: Request) {
       }
     );
   }
+  const phone = user?.phone;
 const lastSpin =
   await prisma.ruleta.findFirst({
-    where: {
-      usuarioId: user.id,
-    },
+    where: phone
+      ? {
+          usuario: {
+            phone,
+          },
+        }
+      : {
+          usuarioId: user.id,
+        },
+
     orderBy: {
       createdAt: "desc",
     },

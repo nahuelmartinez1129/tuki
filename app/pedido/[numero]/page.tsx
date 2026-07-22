@@ -338,7 +338,7 @@ const CurrentIcon =
 
       <div className="pb-10 text-center text-xs text-tuki-cream/50">
         Horario de atención:
-        19:00 - 02:00
+        21:00 - 01:30
       </div>
     </div>
   </main>

@@ -22,6 +22,14 @@ export async function POST(
 ) {
   const body =
     await request.json();
+    await prisma.usuario.updateMany({
+  where: {
+    anonymousId: body.anonymousId,
+  },
+  data: {
+    phone: body.telefono,
+  },
+});
     const configuracion =
   await prisma.configuracion.findFirst();
 

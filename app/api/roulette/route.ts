@@ -18,6 +18,7 @@ export async function GET(request: Request) {
       anonymousId,
     },
   });
+  const phone = user?.phone;
 
   if (!user) {
     return NextResponse.json({
@@ -25,10 +26,18 @@ export async function GET(request: Request) {
     });
   }
 
-  const lastSpin = await prisma.ruleta.findFirst({
-    where: {
-      usuarioId: user.id,
-    },
+const lastSpin =
+  await prisma.ruleta.findFirst({
+    where: phone
+      ? {
+          usuario: {
+            phone,
+          },
+        }
+      : {
+          usuarioId: user.id,
+        },
+
     orderBy: {
       createdAt: "desc",
     },

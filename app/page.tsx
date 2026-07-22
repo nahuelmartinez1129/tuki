@@ -13,6 +13,10 @@ import { RouletteSection } from "@/components/home/roulette-section";
 import { WhatsappCta } from "@/components/home/whatsapp-cta";
 import { StatusBanner }
 from "@/components/home/status-banner";
+
+export const dynamic = "force-dynamic";
+
+export const revalidate = 0;
 export default function Home() {
 
   return (

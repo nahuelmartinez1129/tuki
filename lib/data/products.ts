@@ -123,7 +123,7 @@ export const featuredProducts: Product[] = [
 export const comboProducts: Product[] = [
   {
     id: "combo-noche-tuki-1",
-    name: "Combo 1 Noche Tuki",
+    name: "Combo 1 - Noche Tuki",
     description: "1 Gula + 1 Oblea Smack + 1 Cub Smack + 1 Shot.",
     price: 3900,
     
@@ -135,7 +135,7 @@ export const comboProducts: Product[] = [
   },
   {
     id: "combo-noche-tuki-2",
-    name: "Combo 2 Noche Tuki",
+    name: "Combo 2 - Noche Tuki",
     description: "1 Aguila + 1 Gula + 1 Shot + 8 gomitas dientitos.",
     price: 5800,
     
@@ -146,7 +146,7 @@ export const comboProducts: Product[] = [
   },
   {
     id: "combo-noche-tuki-3",
-    name: "Combo 3 Noche Tuki",
+    name: "Combo 3 - Noche Tuki",
     description: "2 Aguila + 2 Bolsitas de gomitas (conitos y anillos) + 2 Misky.",
     price: 6500,
     

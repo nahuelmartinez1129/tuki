@@ -378,6 +378,10 @@ async function eliminar(
       <option value="combos">
         Combos
       </option>
+
+      <option value="misterioso">
+  Caja Misteriosa
+</option>
     </select>
   </div>
 

@@ -111,7 +111,7 @@ if (happyHour) {
 
   if (happyHour.tipo === "GOMITAS") {
     regalo +=
-      "🍬 Gomitas Gratis (Happy Hour) ";
+      "🍬 Caramelos Gratis (Happy Hour) ";
   }
 
   if (

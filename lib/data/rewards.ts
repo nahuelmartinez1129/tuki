@@ -35,7 +35,7 @@ export const ROULETTE_PRIZES: RoulettePrize[] = [
   { id: "DESCUENTO", label: "10% OFF", shortLabel: "10% OFF", color: "#C6DB00", emoji: "🏷️" },
   { id: "ENVIO_GRATIS", label: "Envío gratis", shortLabel: "Envío gratis", color: "#1BA091", emoji: "🚀" },
   { id: "CUPON_1500", label: "Cupón $1500", shortLabel: "$1500", color: "#F5E57A", emoji: "🎟️" },
-  { id: "GOMITAS", label: "Gomitas gratis", shortLabel: "Gomitas", color: "#80AD7E", emoji: "🍬" },
+  { id: "GOMITAS", label: "Caramelos Gratis", shortLabel: "Caramelos", color: "#80AD7E", emoji: "🍬" },
   { id: "CAJA_10", label: "Caja Misteriosa 10% OFF", shortLabel: "Caja -10%", color: "#C6DB00", emoji: "🎁" },
   { id: "SIN_PREMIO", label: "Sin premio, ¡mejor suerte mañana!", shortLabel: "Sin premio", color: "#12312E", emoji: "🌙", isBlank: true },
 ];

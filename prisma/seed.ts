@@ -51,7 +51,7 @@ async function main() {
       probabilidad: 7,
     },
     {
-      nombre: "Gomitas Gratis",
+      nombre: "Caramelos Gratis",
       tipo: "GOMITAS",
       probabilidad: 3,
     },

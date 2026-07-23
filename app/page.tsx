@@ -12,10 +12,9 @@ import { MysteryBoxSection } from "@/components/home/mystery-box";
 import { RouletteSection } from "@/components/home/roulette-section";
 import { WhatsappCta } from "@/components/home/whatsapp-cta";
 import { RegisterGate } from "@/components/auth/register-gate";
-import { StatusBanner }
-
-
-from "@/components/home/status-banner";
+import { StatusBanner }from "@/components/home/status-banner";
+import { HappyHourModal }
+from "@/components/home/happy-hour-modal";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +27,7 @@ export default function Home() {
       <Navbar />
   <StatusBanner />
       <HappyHour />
+      <HappyHourModal />
       <main>
         <Hero />
         <PromoBanner />

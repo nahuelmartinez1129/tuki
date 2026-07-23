@@ -36,16 +36,16 @@ const [showRegisterModal, setShowRegisterModal] =
 const [canSpin, setCanSpin] =
   useState(false);
 
-  const [loading, setLoading] = useState(true);
-  
-    useEffect(() => {
-  async function checkRoulette() {
-   if (!phone) {
-  setCanSpin(false);
-  setLoading(false);
-  return;
-}
+  const [loading, setLoading] =
+  useState(false);
+  useEffect(() => {
+  if (!phone) {
+    return;
+  }
 
+  setLoading(true);
+
+  async function checkRoulette() {
     const response = await fetch(
       `/api/roulette?phone=${phone}`
     );
@@ -53,11 +53,19 @@ const [canSpin, setCanSpin] =
     const data =
       await response.json();
 
+    console.log(
+      "PHONE:",
+      phone
+    );
+
+    console.log(
+      "DATA:",
+      data
+    );
+
     setCanSpin(
       data.canSpin
     );
-
-    
 
     setLoading(false);
   }

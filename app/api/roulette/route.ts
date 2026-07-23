@@ -53,13 +53,28 @@ export async function GET(
     });
   }
 
-  const now = new Date();
+  const now = new Date(
+  new Date().toLocaleString(
+    "en-US",
+    {
+      timeZone:
+        "America/Argentina/Buenos_Aires",
+    }
+  )
+);
 
-  const nextReset =
+const nextReset =
+  new Date(
     new Date(
       lastSpin.createdAt
-    );
-
+    ).toLocaleString(
+      "en-US",
+      {
+        timeZone:
+          "America/Argentina/Buenos_Aires",
+      }
+    )
+  );
   nextReset.setDate(
     nextReset.getDate() + 1
   );

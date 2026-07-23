@@ -42,23 +42,49 @@ export async function POST(
   });
 
   if (lastSpin) {
-    const now = new Date();
+    const now = new Date(
+  new Date().toLocaleString(
+    "en-US",
+    {
+      timeZone:
+        "America/Argentina/Buenos_Aires",
+    }
+  )
+);
 
-    const nextReset =
-      new Date(
-        lastSpin.createdAt
-      );
+const nextReset =
+  new Date(
+    new Date(
+      lastSpin.createdAt
+    ).toLocaleString(
+      "en-US",
+      {
+        timeZone:
+          "America/Argentina/Buenos_Aires",
+      }
+    )
+  );
 
-    nextReset.setDate(
-      nextReset.getDate() + 1
-    );
+nextReset.setDate(
+  nextReset.getDate() + 1
+);
 
-    nextReset.setHours(
-      21,
-      0,
-      0,
-      0
-    );
+nextReset.setHours(
+  21,
+  0,
+  0,
+  0
+);
+
+console.log(
+  "HORA ARGENTINA:",
+  now
+);
+
+console.log(
+  "PROXIMO RESET:",
+  nextReset
+);
 
     if (now < nextReset) {
       return NextResponse.json(

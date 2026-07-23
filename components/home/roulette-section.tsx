@@ -12,7 +12,7 @@ import {
   type RoulettePrize,
 } from "@/lib/data/rewards";
 
-import { formatCountdown } from "@/hooks/use-countdown";
+
 
 import { useUser } from "@/hooks/useUser";
 import { RegisterModal }
@@ -35,7 +35,7 @@ const [showRegisterModal, setShowRegisterModal] =
 
 const [canSpin, setCanSpin] =
   useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(0);
+
   const [loading, setLoading] = useState(true);
   
     useEffect(() => {
@@ -57,11 +57,7 @@ const [canSpin, setCanSpin] =
       data.canSpin
     );
 
-    if (!data.canSpin) {
-      setSecondsLeft(
-        data.secondsLeft
-      );
-    }
+    
 
     setLoading(false);
   }
@@ -69,15 +65,6 @@ const [canSpin, setCanSpin] =
   checkRoulette();
 }, [phone]);
 
-useEffect(() => {
-  if (secondsLeft <= 0) return;
-
-  const interval = setInterval(() => {
-    setSecondsLeft((prev) => prev - 1);
-  }, 1000);
-
-  return () => clearInterval(interval);
-}, [secondsLeft]);
 
 async function handleSpin() {
   const phone =
@@ -125,7 +112,7 @@ const prizeIndex =
     
 
     setCanSpin(false);
-setSecondsLeft(24 * 60 * 60);
+
     
 
     const targetSegmentCenter =
@@ -192,15 +179,14 @@ setSecondsLeft(24 * 60 * 60);
     </Button>
   ) : (
     <div className="rounded-2xl bg-white/5 px-4 py-3">
-      <p className="text-xs text-tuki-cream/60">
-       🎰 Próxima ruleta:
-Mañana a las 21:00
-      </p>
+  <p className="font-display text-lg font-extrabold text-tuki-yellow">
+    🎰 Próxima ruleta
+  </p>
 
-      <p className="font-display text-lg font-extrabold tabular-nums text-tuki-yellow">
-        {formatCountdown(secondsLeft)}
-      </p>
-    </div>
+  <p className="mt-1 text-sm text-tuki-cream">
+    Mañana a las 21:00
+  </p>
+</div>
   )}
 </div>
 

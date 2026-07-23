@@ -86,6 +86,30 @@ const nextReset =
     0
   );
 
+  console.log(
+  "TIMEZONE VPS:",
+  Intl.DateTimeFormat().resolvedOptions().timeZone
+);
+
+console.log(
+  "HORA VPS:",
+  new Date().toString()
+);
+
+console.log(
+  "HORA ARGENTINA:",
+  now.toString()
+);
+
+console.log(
+  "PROXIMO RESET:",
+  nextReset.toString()
+);
+
+console.log(
+  "PUEDE GIRAR:",
+  now >= nextReset
+);
   if (now >= nextReset) {
     return NextResponse.json({
       canSpin: true,

@@ -77,13 +77,28 @@ nextReset.setHours(
 );
 
 console.log(
+  "TIMEZONE VPS:",
+  Intl.DateTimeFormat().resolvedOptions().timeZone
+);
+
+console.log(
+  "HORA VPS:",
+  new Date().toString()
+);
+
+console.log(
   "HORA ARGENTINA:",
-  now
+  now.toString()
 );
 
 console.log(
   "PROXIMO RESET:",
-  nextReset
+  nextReset.toString()
+);
+
+console.log(
+  "PUEDE GIRAR:",
+  now >= nextReset
 );
 
     if (now < nextReset) {

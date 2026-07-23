@@ -192,7 +192,7 @@ const prizeIndex =
   </p>
 
   <p className="mt-1 text-sm text-tuki-cream">
-    Mañana a las 21:00
+    Disponible todos los días a las 21:00
   </p>
 </div>
   )}

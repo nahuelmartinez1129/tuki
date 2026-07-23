@@ -143,7 +143,7 @@ if (
 
   if (reward.premio === "GOMITAS") {
     regalo +=
-      "🍬 Gomitas Gratis ";
+      "🍬 Caramelos Gratis ";
   }
 
   if (
@@ -295,7 +295,7 @@ if (
     }
   );
 
-  setReward(null);
+  setReward(null);//
 }
 
 

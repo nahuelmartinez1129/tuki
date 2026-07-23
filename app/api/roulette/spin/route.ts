@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function POST(
+  request: Request
+) {
   const { anonymousId } =
     await request.json();
 
@@ -37,6 +39,7 @@ export async function POST(request: Request) {
         : {
             usuarioId: user.id,
           },
+
       orderBy: {
         createdAt: "desc",
       },
@@ -45,20 +48,21 @@ export async function POST(request: Request) {
   if (lastSpin) {
     const now = new Date();
 
-const nextReset = new Date(
-  lastSpin.createdAt
-);
+    const nextReset =
+      new Date(
+        lastSpin.createdAt
+      );
 
-nextReset.setDate(
-  nextReset.getDate() + 1
-);
+    nextReset.setDate(
+      nextReset.getDate() + 1
+    );
 
-nextReset.setHours(
-  21,
-  0,
-  0,
-  0
-);
+    nextReset.setHours(
+      21,
+      0,
+      0,
+      0
+    );
 
     if (now < nextReset) {
       return NextResponse.json(
@@ -72,6 +76,20 @@ nextReset.setHours(
       );
     }
   }
+
+  // DESACTIVAR TODOS LOS PREMIOS ANTERIORES
+  await prisma.ruleta.updateMany(
+    {
+      where: {
+        usuarioId: user.id,
+        utilizado: false,
+      },
+
+      data: {
+        utilizado: true,
+      },
+    }
+  );
 
   const premios =
     await prisma.premio.findMany({

@@ -4,15 +4,15 @@ import { NextResponse } from "next/server";
 export async function POST(
   request: Request
 ) {
-  const { anonymousId } =
-    await request.json();
+ const { phone } =
+  await request.json();
 
   const user =
-    await prisma.usuario.findUnique({
-      where: {
-        anonymousId,
-      },
-    });
+  await prisma.usuario.findUnique({
+    where: {
+      phone,
+    },
+  });
 
   if (!user) {
     return NextResponse.json(
@@ -26,24 +26,20 @@ export async function POST(
     );
   }
 
-  const phone = user.phone;
+  
 
-  const lastSpin =
-    await prisma.ruleta.findFirst({
-      where: phone
-        ? {
-            usuario: {
-              phone,
-            },
-          }
-        : {
-            usuarioId: user.id,
-          },
-
-      orderBy: {
-        createdAt: "desc",
+ const lastSpin =
+  await prisma.ruleta.findFirst({
+    where: {
+      usuario: {
+        phone,
       },
-    });
+    },
+
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
   if (lastSpin) {
     const now = new Date();

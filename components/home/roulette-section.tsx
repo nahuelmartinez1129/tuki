@@ -13,7 +13,7 @@ import {
 } from "@/lib/data/rewards";
 
 import { formatCountdown } from "@/hooks/use-countdown";
-import { useAnonymousUser } from "@/hooks/useAnonymousUser";
+
 import { useUser } from "@/hooks/useUser";
 import { RegisterModal }
 from "@/components/auth/register-modal";
@@ -23,7 +23,7 @@ const SPIN_DURATION_MS = 4200;
 
 
 export function RouletteSection() {
-    const anonymousId = useAnonymousUser();
+    
     const { phone } =
   useUser();
   const [rotation, setRotation] = useState(0);
@@ -33,31 +33,41 @@ const [showRegisterModal, setShowRegisterModal] =
   useState(false);
   const [result, setResult] = useState<RoulettePrize | null>(null);
 
-const [canSpin, setCanSpin] = useState(true);
+const [canSpin, setCanSpin] =
+  useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [loading, setLoading] = useState(true);
   
     useEffect(() => {
   async function checkRoulette() {
-    if (!anonymousId) return;
+   if (!phone) {
+  setCanSpin(false);
+  setLoading(false);
+  return;
+}
 
     const response = await fetch(
-      `/api/roulette?anonymousId=${anonymousId}`
+      `/api/roulette?phone=${phone}`
     );
 
-    const data = await response.json();
+    const data =
+      await response.json();
 
-    setCanSpin(data.canSpin);
+    setCanSpin(
+      data.canSpin
+    );
 
     if (!data.canSpin) {
-      setSecondsLeft(data.secondsLeft);
+      setSecondsLeft(
+        data.secondsLeft
+      );
     }
 
     setLoading(false);
   }
 
   checkRoulette();
-}, [anonymousId]);
+}, [phone]);
 
 useEffect(() => {
   if (secondsLeft <= 0) return;
@@ -90,7 +100,7 @@ if (!phone) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        anonymousId,
+        
         phone,
       }),
     }

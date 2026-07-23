@@ -15,8 +15,7 @@ import {
   Wallet,
 } from "lucide-react";
 
-import { useAnonymousUser }
-from "@/hooks/useAnonymousUser";
+
 
 
 import { Button } from "@/components/ui/button";
@@ -50,8 +49,7 @@ const PAYMENT_METHODS: {
 
 
 export default function CheckoutPage() {
-  const anonymousId =
-  useAnonymousUser();
+  
 
 const [reward, setReward] =
   useState<{ premio?: string; id?: string } | null>(null);
@@ -166,32 +164,43 @@ const total =
 
 const gomitasGratis =
   happyHour?.tipo === "GOMITAS";
-
 useEffect(() => {
-  async function loadReward() {
-    if (!anonymousId) return;
-
-    const response = await fetch(
-      `/api/rewards?anonymousId=${anonymousId}`
+  const storedPhone =
+    localStorage.getItem(
+      "tuki_user_phone"
     );
 
-    const data = await response.json();
+  const storedName =
+    localStorage.getItem(
+      "tuki_user_name"
+    );
 
-    console.log(
-  "AnonymousId:",
-  anonymousId
-);
+  if (storedPhone) {
+    setPhone(storedPhone);
+  }
 
-console.log(
-  "Reward:",
-  data
-);
+  if (storedName) {
+    setCustomerName(
+      storedName
+    );
+  }
+}, []);
+useEffect(() => {
+  async function loadReward() {
+    if (!phone) return;
+
+    const response = await fetch(
+      `/api/rewards?phone=${phone}`
+    );
+
+    const data =
+      await response.json();
 
     setReward(data);
   }
 
   loadReward();
-}, [anonymousId]);
+}, [phone]);
 
 useEffect(() => {
   async function loadConfig() {
@@ -310,7 +319,7 @@ const response = await fetch(
     },
 
     body: JSON.stringify({
-       anonymousId,
+       
   nombre: customerName,
   telefono: phone,
   direccion: address,

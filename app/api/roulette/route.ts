@@ -1,24 +1,33 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
+export async function GET(
+  request: Request
+) {
+  const { searchParams } =
+    new URL(request.url);
 
-  const anonymousId = searchParams.get("anonymousId");
+  const phone =
+    searchParams.get("phone");
 
-  if (!anonymousId) {
+  if (!phone) {
     return NextResponse.json(
-      { error: "anonymousId requerido" },
-      { status: 400 }
+      {
+        error:
+          "phone requerido",
+      },
+      {
+        status: 400,
+      }
     );
   }
 
-  const user = await prisma.usuario.findUnique({
-    where: {
-      anonymousId,
-    },
-  });
-  const phone = user?.phone;
+  const user =
+    await prisma.usuario.findUnique({
+      where: {
+        phone,
+      },
+    });
 
   if (!user) {
     return NextResponse.json({
@@ -26,22 +35,17 @@ export async function GET(request: Request) {
     });
   }
 
-const lastSpin =
-  await prisma.ruleta.findFirst({
-    where: phone
-      ? {
-          usuario: {
-            phone,
-          },
-        }
-      : {
-          usuarioId: user.id,
+  const lastSpin =
+    await prisma.ruleta.findFirst({
+      where: {
+        usuario: {
+          phone,
         },
-
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
   if (!lastSpin) {
     return NextResponse.json({
@@ -51,61 +55,90 @@ const lastSpin =
 
   const now = new Date();
 
-const nextReset = new Date(
-  lastSpin.createdAt
-);
+  const nextReset =
+    new Date(
+      lastSpin.createdAt
+    );
 
-nextReset.setDate(
-  nextReset.getDate() + 1
-);
+  nextReset.setDate(
+    nextReset.getDate() + 1
+  );
 
-nextReset.setHours(
-  21,
-  0,
-  0,
-  0
-);
+  nextReset.setHours(
+    21,
+    0,
+    0,
+    0
+  );
 
-if (now >= nextReset) {
-  return NextResponse.json({
-    canSpin: true,
-  });
-}
+  if (now >= nextReset) {
+    return NextResponse.json({
+      canSpin: true,
+    });
+  }
 
   return NextResponse.json({
     canSpin: false,
-    prize: lastSpin.premio,
-    secondsLeft: Math.floor(
-  (
-    nextReset.getTime() -
-    now.getTime()
-  ) / 1000
-),
+    prize:
+      lastSpin.premio,
+    secondsLeft:
+      Math.floor(
+        (
+          nextReset.getTime() -
+          now.getTime()
+        ) / 1000
+      ),
   });
 }
 
-export async function POST(request: Request) {
-  const { anonymousId, premio } = await request.json();
+export async function POST(
+  request: Request
+) {
+  const {
+    phone,
+    premio,
+  } =
+    await request.json();
 
-  const user = await prisma.usuario.findUnique({
-    where: {
-      anonymousId,
-    },
-  });
-
-  if (!user) {
+  if (!phone) {
     return NextResponse.json(
-      { error: "Usuario no encontrado" },
-      { status: 404 }
+      {
+        error:
+          "phone requerido",
+      },
+      {
+        status: 400,
+      }
     );
   }
 
-  const spin = await prisma.ruleta.create({
-    data: {
-      usuarioId: user.id,
-      premio,
-    },
-  });
+  let user =
+    await prisma.usuario.findUnique({
+      where: {
+        phone,
+      },
+    });
 
-  return NextResponse.json(spin);
+  // Si no existe, lo creamos
+  if (!user) {
+    user =
+      await prisma.usuario.create({
+        data: {
+          phone,
+        },
+      });
+  }
+
+  const spin =
+    await prisma.ruleta.create({
+      data: {
+        usuarioId:
+          user.id,
+        premio,
+      },
+    });
+
+  return NextResponse.json(
+    spin
+  );
 }

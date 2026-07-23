@@ -8,16 +8,15 @@ datasource db {
 }
 
 model Usuario {
-  id              String     @id @default(cuid())
-  nombre          String?
-  anonymousId     String?    @unique
-  phone           String?    @unique
-  googleId        String?
-  createdAt       DateTime   @default(now())
-  ultimoIngreso   DateTime?
+  id            String   @id @default(cuid())
+  nombre        String?
+  phone         String   @unique
+  googleId      String?
+  createdAt     DateTime @default(now())
+  ultimoIngreso DateTime?
 
-  usosCupon       CuponUso[]
-  ruletas         Ruleta[]
+  usosCupon     CuponUso[]
+  ruletas       Ruleta[]
 }
 
 model Ruleta {

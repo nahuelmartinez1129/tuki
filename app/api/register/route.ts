@@ -7,44 +7,40 @@ export async function POST(
   const {
     nombre,
     phone,
-    anonymousId,
   } = await request.json();
 
+  // ¿Existe alguien con ese teléfono?
   const existingUser =
-    await prisma.usuario.findFirst({
+    await prisma.usuario.findUnique({
       where: {
-        OR: [
-          { phone },
-          { anonymousId },
-        ],
-      },
-    });
-
-  if (existingUser) {
-    await prisma.usuario.update({
-      where: {
-        id: existingUser.id,
-      },
-      data: {
-        nombre,
         phone,
       },
     });
 
+  // SI YA EXISTE EL TELÉFONO
+  if (existingUser) {
     return NextResponse.json({
       success: true,
+      isNewUser: false,
+      nombre:
+        existingUser.nombre,
+      phone:
+        existingUser.phone,
     });
   }
 
+  // Crear usuario nuevo
   await prisma.usuario.create({
     data: {
       nombre,
       phone,
-      anonymousId,
     },
   });
 
   return NextResponse.json({
     success: true,
+    isNewUser: true,
+    nombre,
+    phone,
   });
 }

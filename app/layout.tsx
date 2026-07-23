@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
 import { CartProvider } from "@/contexts/cart-context";
-import AnonymousUserProvider from "@/components/AnonymousUserProvider";
+
 import { CartManager } from "@/components/cart/cart-manager";
 
 export const metadata: Metadata = {
@@ -41,7 +41,7 @@ export default function RootLayout({
           {children}
           <CartManager />
         </CartProvider>
-        <AnonymousUserProvider />
+       
       </body>
     </html>
   );

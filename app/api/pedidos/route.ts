@@ -22,43 +22,26 @@ export async function POST(
 ) {
   const body =
     await request.json();
-    
-   console.log(
-  "ANONYMOUS ID:",
-  body.anonymousId
-);
 
-console.log(
-  "BODY:",
-  body
-);
-
-if (body.anonymousId) {
-  await prisma.usuario.updateMany({
-    where: {
-      anonymousId:
-        body.anonymousId,
-    },
-    data: {
-      phone:
-        body.telefono,
-    },
-  });
-}
-    const configuracion =
-  await prisma.configuracion.findFirst();
-
-if (!configuracion?.abierto) {
-  return NextResponse.json(
-    {
-      error:
-        "TUKI está descansando 🌙 Volvemos pronto.",
-    },
-    {
-      status: 403,
-    }
+  console.log(
+    "BODY:",
+    body
   );
-}
+
+  const configuracion =
+    await prisma.configuracion.findFirst();
+
+  if (!configuracion?.abierto) {
+    return NextResponse.json(
+      {
+        error:
+          "TUKI está descansando 🌙 Volvemos pronto.",
+      },
+      {
+        status: 403,
+      }
+    );
+  }
 
   const ultimoPedido =
     await prisma.pedido.findFirst({
@@ -70,131 +53,127 @@ if (!configuracion?.abierto) {
   const numero =
     (ultimoPedido?.numero ?? 0) + 1;
 
-    let descuento =
-  body.descuento;
+  let descuento =
+    body.descuento;
 
-let envio =
-  body.envio;
+  let envio =
+    body.envio;
 
-const caja =
-  body.items.find(
-    (item: any) =>
-      item.nombre
-        .toLowerCase()
-        .includes("caja")
-  );
+  const caja =
+    body.items.find(
+      (item: any) =>
+        item.nombre
+          .toLowerCase()
+          .includes("caja")
+    );
 
-const happyHour =
-  await prisma.happyHour.findFirst({
-    where: {
-      activo: true,
-    },
-  });
-  console.log(
-  "HAPPY HOUR AL CREAR PEDIDO:",
-  happyHour
-);
-  console.log(
-  "HAPPY HOUR BACKEND:",
-  happyHour
-);
-
-if (happyHour) {
-  if (
-    happyHour.tipo ===
-    "ENVIO_GRATIS"
-  ) {
-    envio = 0;
-  }
-
-  if (
-    happyHour.tipo ===
-    "DESCUENTO"
-  ) {
-    descuento =
-      body.subtotal *
-      ((happyHour.valor ?? 0) / 100);
-  }
-
-  if (
-    happyHour.tipo ===
-    "CUPON_1500"
-  ) {
-    descuento =
-      happyHour.valor;
-  }
-
-  if (
-    happyHour.tipo ===
-    "CAJA_10" &&
-    caja
-  ) {
-    descuento =
-      caja.precio * 0.1;
-  }
-}
-if (
-  descuento >
-  body.subtotal
-) {
-  descuento =
-    body.subtotal;
-}
-const total =
-  Math.max(
-    body.subtotal -
-      descuento +
-      envio,
-    0
-  );
-  console.log(
-  "TOTAL FINAL:",
-  {
-    subtotal:
-      body.subtotal,
-    descuento,
-    envio,
-    total,
-  }
-);
-  console.log(
-  "HAPPY HOUR BACKEND:",
-  happyHour
-);
-
-for (const item of body.items) {
-  const producto =
-    await prisma.producto.findFirst({
+  const happyHour =
+    await prisma.happyHour.findFirst({
       where: {
-        name: item.nombre,
+        activo: true,
       },
     });
 
-  if (!producto) {
-    return NextResponse.json(
-      {
-        error: `${item.nombre} no existe`,
-      },
-      {
-        status: 400,
-      }
-    );
+  console.log(
+    "HAPPY HOUR AL CREAR PEDIDO:",
+    happyHour
+  );
+
+  if (happyHour) {
+    if (
+      happyHour.tipo ===
+      "ENVIO_GRATIS"
+    ) {
+      envio = 0;
+    }
+
+    if (
+      happyHour.tipo ===
+      "DESCUENTO"
+    ) {
+      descuento =
+        body.subtotal *
+        ((happyHour.valor ?? 0) / 100);
+    }
+
+    if (
+      happyHour.tipo ===
+      "CUPON_1500"
+    ) {
+      descuento =
+        happyHour.valor;
+    }
+
+    if (
+      happyHour.tipo ===
+      "CAJA_10" &&
+      caja
+    ) {
+      descuento =
+        caja.precio * 0.1;
+    }
   }
 
   if (
-    producto.stock <
-    item.cantidad
+    descuento >
+    body.subtotal
   ) {
-    return NextResponse.json(
-      {
-        error: `No hay stock suficiente de ${item.nombre}`,
-      },
-      {
-        status: 400,
-      }
-    );
+    descuento =
+      body.subtotal;
   }
-}
+
+  const total =
+    Math.max(
+      body.subtotal -
+        descuento +
+        envio,
+      0
+    );
+
+  console.log(
+    "TOTAL FINAL:",
+    {
+      subtotal:
+        body.subtotal,
+      descuento,
+      envio,
+      total,
+    }
+  );
+
+  for (const item of body.items) {
+    const producto =
+      await prisma.producto.findFirst({
+        where: {
+          name: item.nombre,
+        },
+      });
+
+    if (!producto) {
+      return NextResponse.json(
+        {
+          error: `${item.nombre} no existe`,
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (
+      producto.stock <
+      item.cantidad
+    ) {
+      return NextResponse.json(
+        {
+          error: `No hay stock suficiente de ${item.nombre}`,
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+  }
 
   const pedido =
     await prisma.pedido.create({
@@ -207,8 +186,8 @@ for (const item of body.items) {
         direccion:
           body.direccion,
 
-          metodoPago:
-        body.metodoPago,
+        metodoPago:
+          body.metodoPago,
 
         subtotal:
           body.subtotal,
@@ -219,9 +198,12 @@ for (const item of body.items) {
         envio:
           envio,
 
-          premio: body.premio,
-happyHour:
-  happyHour?.titulo ?? null,
+        premio:
+          body.premio,
+
+        happyHour:
+          happyHour?.titulo ??
+          null,
 
         total:
           total,
@@ -230,72 +212,77 @@ happyHour:
           body.observaciones,
 
         items: {
-  create: body.items.map(
-    (item: any) => ({
-      nombre: item.nombre,
-      cantidad: item.cantidad,
-      precio: item.precio,
-    })
-  ),
-},
+          create:
+            body.items.map(
+              (item: any) => ({
+                nombre:
+                  item.nombre,
+                cantidad:
+                  item.cantidad,
+                precio:
+                  item.precio,
+              })
+            ),
+        },
       },
 
       include: {
         items: true,
       },
     });
-   for (const item of body.items) {
-  const producto =
-    await prisma.producto.findFirst({
-      where: {
-        name: item.nombre,
-      },
-    });
 
-  if (!producto) continue;
+  for (const item of body.items) {
+    const producto =
+      await prisma.producto.findFirst({
+        where: {
+          name: item.nombre,
+        },
+      });
 
-  await prisma.producto.update({
-    where: {
-      id: producto.id,
-    },
-    data: {
-      stock: {
-        decrement:
-          item.cantidad,
-      },
-    },
-  });
-}
+    if (!producto) continue;
 
-for (const item of body.items) {
-  const producto =
-    await prisma.producto.findFirst({
-      where: {
-        name: item.nombre,
-      },
-    });
-
-  if (
-    producto &&
-    producto.stock <= 0
-  ) {
     await prisma.producto.update({
       where: {
         id: producto.id,
       },
       data: {
-        activo: false,
+        stock: {
+          decrement:
+            item.cantidad,
+        },
       },
     });
   }
-}
+
+  for (const item of body.items) {
+    const producto =
+      await prisma.producto.findFirst({
+        where: {
+          name: item.nombre,
+        },
+      });
+
+    if (
+      producto &&
+      producto.stock <= 0
+    ) {
+      await prisma.producto.update({
+        where: {
+          id: producto.id,
+        },
+        data: {
+          activo: false,
+        },
+      });
+    }
+  }
 
   console.log(
-  "PEDIDO CREADO:",
-  pedido
-);
+    "PEDIDO CREADO:",
+    pedido
+  );
 
-return NextResponse.json(
-  pedido
-);
+  return NextResponse.json(
+    pedido
+  );
 }

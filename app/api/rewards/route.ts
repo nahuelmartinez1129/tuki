@@ -4,28 +4,25 @@ import { NextResponse } from "next/server";
 export async function GET(
   request: Request
 ) {
-  const { searchParams } =
-    new URL(request.url);
+  const { searchParams } = new URL(
+    request.url
+  );
 
-  const anonymousId =
-    searchParams.get(
-      "anonymousId"
-    );
+  const phone =
+    searchParams.get("phone");
 
-  if (!anonymousId) {
+  if (!phone) {
     return NextResponse.json(
       null
     );
   }
 
   const user =
-    await prisma.usuario.findUnique(
-      {
-        where: {
-          anonymousId,
-        },
-      }
-    );
+    await prisma.usuario.findUnique({
+      where: {
+        phone,
+      },
+    });
 
   if (!user) {
     return NextResponse.json(
@@ -34,18 +31,16 @@ export async function GET(
   }
 
   const reward =
-    await prisma.ruleta.findFirst(
-      {
-        where: {
-          usuarioId: user.id,
-          utilizado: false,
-        },
+    await prisma.ruleta.findFirst({
+      where: {
+        usuarioId: user.id,
+        utilizado: false,
+      },
 
-        orderBy: {
-          createdAt: "desc",
-        },
-      }
-    );
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
   if (!reward) {
     return NextResponse.json(
@@ -55,14 +50,12 @@ export async function GET(
 
   const now = new Date();
 
-  const nextReset =
-    new Date(
-      reward.createdAt
-    );
+  const nextReset = new Date(
+    reward.createdAt
+  );
 
   nextReset.setDate(
-    nextReset.getDate() +
-      1
+    nextReset.getDate() + 1
   );
 
   nextReset.setHours(

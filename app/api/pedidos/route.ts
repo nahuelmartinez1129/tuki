@@ -231,51 +231,6 @@ export async function POST(
       },
     });
 
-  for (const item of body.items) {
-    const producto =
-      await prisma.producto.findFirst({
-        where: {
-          name: item.nombre,
-        },
-      });
-
-    if (!producto) continue;
-
-    await prisma.producto.update({
-      where: {
-        id: producto.id,
-      },
-      data: {
-        stock: {
-          decrement:
-            item.cantidad,
-        },
-      },
-    });
-  }
-
-  for (const item of body.items) {
-    const producto =
-      await prisma.producto.findFirst({
-        where: {
-          name: item.nombre,
-        },
-      });
-
-    if (
-      producto &&
-      producto.stock <= 0
-    ) {
-      await prisma.producto.update({
-        where: {
-          id: producto.id,
-        },
-        data: {
-          activo: false,
-        },
-      });
-    }
-  }
 
   console.log(
     "PEDIDO CREADO:",

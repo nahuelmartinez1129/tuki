@@ -18,16 +18,36 @@ export async function POST(
     });
 
   // SI YA EXISTE EL TELÉFONO
-  if (existingUser) {
-    return NextResponse.json({
-      success: true,
-      isNewUser: false,
-      nombre:
-        existingUser.nombre,
-      phone:
-        existingUser.phone,
+ if (existingUser) {
+  // Si el usuario existe pero no tiene nombre,
+  // se lo actualizamos.
+  if (
+    !existingUser.nombre &&
+    nombre
+  ) {
+    await prisma.usuario.update({
+      where: {
+        id:
+          existingUser.id,
+      },
+      data: {
+        nombre,
+      },
     });
+
+    existingUser.nombre =
+      nombre;
   }
+
+  return NextResponse.json({
+    success: true,
+    isNewUser: false,
+    nombre:
+      existingUser.nombre,
+    phone:
+      existingUser.phone,
+  });
+}
 
   // Crear usuario nuevo
   await prisma.usuario.create({

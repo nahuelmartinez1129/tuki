@@ -113,6 +113,28 @@ function formatPrice(
   ).format(value);
 }
 
+function traducirBeneficio(tipo: string) {
+  switch (tipo) {
+    case "ENVIO_GRATIS":
+      return "🚀 Envío gratis";
+
+    case "DESCUENTO":
+      return "🏷️ 10% OFF";
+
+    case "SMACK_CUBANITO":
+      return "🥜 Smack Cubanito gratis en tu próxima compra";
+
+    case "GOMITAS":
+      return "🍬 Caramelos gratis";
+
+    case "CAJA_10":
+      return "🎁 10% OFF en Caja Misteriosa";
+
+    default:
+      return tipo;
+  }
+}
+
 export default function PedidoPage() {
   const params = useParams();
 
@@ -289,17 +311,17 @@ const CurrentIcon =
             Beneficios
           </h2>
 
-          {pedido.premio && (
-            <p className="mt-3 text-tuki-cream">
-              🎁 {pedido.premio}
-            </p>
-          )}
+         {pedido.premio && (
+  <p className="mt-3 text-tuki-cream">
+    {traducirBeneficio(pedido.premio)}
+  </p>
+)}
 
           {pedido.happyHour && (
-            <p className="text-tuki-cream">
-              🔥 {pedido.happyHour}
-            </p>
-          )}
+  <p className="text-tuki-cream">
+    🔥 {traducirBeneficio(pedido.happyHour)}
+  </p>
+)}
         </div>
       )}
 

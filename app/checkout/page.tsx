@@ -103,9 +103,10 @@ if (happyHour) {
       (happyHour.valor / 100);
   }
 
-  if (happyHour.tipo === "CUPON_1500") {
-    discount += happyHour.valor;
-  }
+ if (happyHour.tipo === "SMACK_CUBANITO") {
+  regalo +=
+    "🥜 Smack Cubanito gratis en tu próxima compra ";
+}
 
   if (happyHour.tipo === "GOMITAS") {
     regalo +=
@@ -135,9 +136,10 @@ if (
     discount += subtotal * 0.1;
   }
 
-  if (reward.premio === "CUPON_1500") {
-    discount += 1500;
-  }
+  if (reward.premio === "SMACK_CUBANITO") {
+  regalo +=
+    "🥜 Smack Cubanito gratis en tu próxima compra ";
+}
 
   if (reward.premio === "GOMITAS") {
     regalo +=
@@ -311,7 +313,7 @@ const response = await fetch(
   envio: delivery,
 
   premio: reward?.premio,
-  happyHour: happyHour?.titulo,
+ happyHour: happyHour?.tipo,
 
   metodoPago: paymentMethod,
 

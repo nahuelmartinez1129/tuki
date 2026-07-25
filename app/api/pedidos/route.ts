@@ -87,31 +87,31 @@ export async function POST(
       envio = 0;
     }
 
-    if (
-      happyHour.tipo ===
-      "DESCUENTO"
-    ) {
-      descuento =
-        body.subtotal *
-        ((happyHour.valor ?? 0) / 100);
-    }
+   if (
+  happyHour.tipo ===
+  "DESCUENTO"
+) {
+  descuento +=
+    body.subtotal *
+    ((happyHour.valor ?? 0) / 100);
+}
 
-    if (
-      happyHour.tipo ===
-      "CUPON_1500"
-    ) {
-      descuento =
-        happyHour.valor;
-    }
+if (
+  happyHour.tipo ===
+  "CUPON_1500"
+) {
+  descuento +=
+    happyHour.valor ?? 0;
+}
 
-    if (
-      happyHour.tipo ===
-      "CAJA_10" &&
-      caja
-    ) {
-      descuento =
-        caja.precio * 0.1;
-    }
+if (
+  happyHour.tipo ===
+  "CAJA_10" &&
+  caja
+) {
+  descuento +=
+    caja.precio * 0.1;
+}
   }
 
   if (

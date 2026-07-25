@@ -264,6 +264,7 @@ useEffect(() => {
 }, []);
 
   async function handleSubmit(
+    
   event: FormEvent<HTMLFormElement>
 ) {
     event.preventDefault();
@@ -286,26 +287,7 @@ useEffect(() => {
    
 
 
-if (
-  reward?.premio &&
-  reward.premio !== "SIN_PREMIO"
-) {
-  await fetch(
-    "/api/rewards/use",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
-      body: JSON.stringify({
-        rewardId: reward.id,
-      }),
-    }
-  );
 
-  setReward(null);//
-}
 
 
 
@@ -353,7 +335,6 @@ console.log(
   "PEDIDO RECIBIDO:",
   pedido
 );
-
 if (
   !response.ok ||
   !pedido.numero
@@ -365,6 +346,27 @@ if (
 
   return;
 }
+if (
+  reward?.premio &&
+  reward.premio !== "SIN_PREMIO"
+) {
+  await fetch(
+    "/api/rewards/use",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        rewardId: reward.id,
+      }),
+    }
+  );
+
+  setReward(null);//
+}
+
 
 localStorage.setItem(
   "tuki_last_order",

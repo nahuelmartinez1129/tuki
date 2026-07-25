@@ -9,9 +9,11 @@ import { CartToast } from "@/components/cart/cart-toast";
 export function CartManager() {
   const pathname = usePathname();
 
-  const hideCart =
-    pathname.startsWith("/checkout") ||
-    pathname.startsWith("/admin");
+ const hideCart =
+  pathname.startsWith("/checkout") ||
+  pathname.startsWith("/admin") ||
+  pathname.startsWith("/pedido/") ||
+  pathname.startsWith("/pedido-exitoso/");
 
   if (hideCart) {
     return null;

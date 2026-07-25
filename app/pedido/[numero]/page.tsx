@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 type PedidoEstado =
   | "PENDIENTE"
   | "CONFIRMADO"
@@ -348,11 +349,18 @@ const CurrentIcon =
           </div>
         </div>
       </div>
-
-      <div className="pb-10 text-center text-xs text-tuki-cream/50">
-        Horario de atención:
-        21:00 - 01:30
-      </div>
+<div className="pt-2">
+  <Button
+    asChild
+    variant="lime"
+    className="w-full"
+  >
+    <Link href="/">
+      Volver al Inicio
+    </Link>
+  </Button>
+</div>
+      
     </div>
   </main>
 );

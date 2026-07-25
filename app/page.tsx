@@ -36,8 +36,9 @@ export default function Home() {
         <FeaturedProducts />
         <Combos />
         <RouletteSection /> 
-        <NightSection />
         <MysteryBoxSection />
+        <NightSection />
+        
         <WhatsappCta />
       </main>
       <Footer />

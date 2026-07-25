@@ -38,48 +38,44 @@ const [canSpin, setCanSpin] =
 
   const [loading, setLoading] =
   useState(false);
-  useEffect(() => {
-  if (!phone) {
-    return;
-  }
+ async function checkRoulette() {
+  if (!phone) return;
 
   setLoading(true);
 
-  async function checkRoulette() {
+  try {
     const response = await fetch(
-      `/api/roulette?phone=${phone}`
+      `/api/roulette?phone=${phone}`,
+      {
+        cache: "no-store",
+      }
     );
 
-    const data =
-      await response.json();
+    const data = await response.json();
 
-    console.log(
-      "PHONE:",
-      phone
-    );
+    console.log("PHONE:", phone);
+    console.log("DATA:", data);
 
-    console.log(
-      "DATA:",
-      data
-    );
-
-    setCanSpin(
-      data.canSpin
-    );
-
+    setCanSpin(data.canSpin);
+  } finally {
     setLoading(false);
   }
+}
+
+useEffect(() => {
+  if (!phone) return;
 
   checkRoulette();
+
+  const interval = setInterval(() => {
+    checkRoulette();
+  }, 30000);
+
+  return () => clearInterval(interval);
 }, [phone]);
 
 
 async function handleSpin() {
-  const phone =
-  localStorage.getItem(
-    "tuki_user_phone"
-  );
-
 if (!phone) {
   setShowRegisterModal(
     true
@@ -137,9 +133,11 @@ const prizeIndex =
     setIsSpinning(true);
     setRotation(finalRotation);
 
-    window.setTimeout(() => {
+   window.setTimeout(() => {
   setIsSpinning(false);
   setResult(prize);
+
+  checkRoulette();
 }, SPIN_DURATION_MS);
   }
 

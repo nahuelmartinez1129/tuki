@@ -58,6 +58,10 @@ export function RegisterModal({
       data.phone
     );
 
+    window.dispatchEvent(
+  new Event("userChanged")
+);
+
     if (!data.isNewUser) {
       setWelcomeMessage(
         `¡Qué bueno verte de nuevo, ${data.nombre}!`
@@ -73,7 +77,9 @@ export function RegisterModal({
       return;
     }
 
-    onClose();
+    setTimeout(() => {
+  onClose();
+}, 100);
   }
 
   if (

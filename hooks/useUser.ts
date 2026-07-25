@@ -9,7 +9,7 @@ export function useUser() {
   const [name, setName] =
     useState<string | null>(null);
 
-  useEffect(() => {
+  function loadUser() {
     setPhone(
       localStorage.getItem(
         "tuki_user_phone"
@@ -21,6 +21,22 @@ export function useUser() {
         "tuki_user_name"
       )
     );
+  }
+
+  useEffect(() => {
+    loadUser();
+
+    window.addEventListener(
+      "userChanged",
+      loadUser
+    );
+
+    return () => {
+      window.removeEventListener(
+        "userChanged",
+        loadUser
+      );
+    };
   }, []);
 
   return {

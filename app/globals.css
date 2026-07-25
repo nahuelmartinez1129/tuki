@@ -53,3 +53,29 @@
     scrollbar-width: none;
   }
 }
+
+@keyframes katoneta {
+  0% {
+    transform:
+      translateX(-12px)
+      rotate(-2deg);
+  }
+
+  50% {
+    transform:
+      translateX(12px)
+      rotate(2deg);
+  }
+
+  100% {
+    transform:
+      translateX(-12px)
+      rotate(-2deg);
+  }
+}
+
+.animate-katoneta {
+  animation:
+    katoneta 2.5s
+    ease-in-out infinite;
+}

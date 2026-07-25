@@ -15,7 +15,8 @@ import { RegisterGate } from "@/components/auth/register-gate";
 import { StatusBanner }from "@/components/home/status-banner";
 import { HappyHourModal }
 from "@/components/home/happy-hour-modal";
-
+import { OrderTracker }
+from "@/components/home/order-tracker";
 export const dynamic = "force-dynamic";
 
 export const revalidate = 0;
@@ -26,6 +27,7 @@ export default function Home() {
      <RegisterGate />
       <Navbar />
   <StatusBanner />
+  <OrderTracker />
       <HappyHour />
       <HappyHourModal />
       <main>

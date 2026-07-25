@@ -197,9 +197,22 @@ const CurrentIcon =
         </div>
 
         <div className="mt-6 flex items-center gap-4">
-          <span className="text-4xl">
-            {currentConfig.emoji}
-          </span>
+          {pedido.estado ===
+"EN_CAMINO" ? (
+  <img
+    src="/katoneta.png"
+    alt="La Katoneta"
+    className="
+      h-20
+      animate-katoneta
+      object-contain
+    "
+  />
+) : (
+  <span className="text-4xl">
+    {currentConfig.emoji}
+  </span>
+)}
 
           <div>
             <p className="font-bold text-tuki-cream">

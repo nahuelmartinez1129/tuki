@@ -366,6 +366,11 @@ if (
   return;
 }
 
+localStorage.setItem(
+  "tuki_last_order",
+  pedido.numero.toString()
+);
+
 window.location.href =
   `/pedido-exitoso/${pedido.numero}`;
 

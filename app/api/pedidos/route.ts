@@ -21,12 +21,15 @@ export async function POST(
   request: Request
 ) {
   const body =
-    await request.json();
+  await request.json();
 
-  console.log(
-    "BODY:",
-    body
-  );
+console.log("========== PEDIDO NUEVO ==========");
+console.log(JSON.stringify(body, null, 2));
+
+console.log("DESCUENTO RECIBIDO:", body.descuento);
+console.log("ENVIO RECIBIDO:", body.envio);
+console.log("PREMIO RECIBIDO:", body.premio);
+console.log("HAPPY HOUR RECIBIDO:", body.happyHour);
 
   const configuracion =
     await prisma.configuracion.findFirst();
@@ -174,7 +177,11 @@ if (
       );
     }
   }
-
+console.log("========== ANTES DE GUARDAR ==========");
+console.log("descuento:", descuento);
+console.log("envio:", envio);
+console.log("total:", total);
+console.log("happyHour DB:", happyHour);
   const pedido =
     await prisma.pedido.create({
       data: {

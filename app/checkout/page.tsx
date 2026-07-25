@@ -373,12 +373,38 @@ localStorage.setItem(
   pedido.numero.toString()
 );
 
-window.location.href =
-  `/pedido-exitoso/${pedido.numero}`;
+if (
+  reward?.premio &&
+  reward.premio !== "SIN_PREMIO"
+) {
+  await fetch(
+    "/api/rewards/use",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        rewardId: reward.id,
+      }),
+    }
+  );
 
-setTimeout(() => {
-  clearCart();
-}, 1000);
+  setReward(null);
+}
+
+localStorage.setItem(
+  "tuki_last_order",
+  pedido.numero.toString()
+);
+
+// Vaciar el carrito ANTES de navegar
+clearCart();
+
+router.push(
+  `/pedido-exitoso/${pedido.numero}`
+);
   }
 
   if (submittedOrder) {

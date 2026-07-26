@@ -103,8 +103,8 @@ if (
   happyHour.tipo ===
   "SMACK_CUBANITO"
 ) {
-  descuento +=
-    happyHour.valor ?? 0;
+  //descuento +=
+  //  happyHour.valor ?? 0;
 }
 
 if (

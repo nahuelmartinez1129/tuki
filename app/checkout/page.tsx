@@ -375,31 +375,6 @@ localStorage.setItem(
   pedido.numero.toString()
 );
 
-if (
-  reward?.premio &&
-  reward.premio !== "SIN_PREMIO"
-) {
-  await fetch(
-    "/api/rewards/use",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
-      body: JSON.stringify({
-        rewardId: reward.id,
-      }),
-    }
-  );
-
-  setReward(null);
-}
-
-localStorage.setItem(
-  "tuki_last_order",
-  pedido.numero.toString()
-);
 
 // Vaciar el carrito ANTES de navegar
 clearCart();

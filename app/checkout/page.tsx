@@ -730,9 +730,21 @@ router.push(
       PREMIO DE LA RULETA
     </p>
 
-    <p className="mt-2 text-sm text-tuki-cream">
-      🎁 {reward.premio}
-    </p>
+<p className="mt-2 text-sm text-tuki-cream">
+  🎁 {
+    reward.premio === "GOMITAS"
+      ? "Caramelos Gratis"
+      : reward.premio === "SMACK_CUBANITO"
+      ? "Smack Cubanito Gratis"
+      : reward.premio === "ENVIO_GRATIS"
+      ? "Envío Gratis"
+      : reward.premio === "DESCUENTO"
+      ? "10% de descuento"
+      : reward.premio === "CAJA_10"
+      ? "10% OFF Caja Misteriosa"
+      : reward.premio
+  }
+</p>
   </>
 )}
 

@@ -50,24 +50,24 @@ export function HappyHourModal() {
   }
 
   const messages: Record<
-    string,
-    string
-  > = {
-    ENVIO_GRATIS:
-      "🚚 ¡Envío gratis en todos los pedidos!",
+  string,
+  string
+> = {
+  ENVIO_GRATIS:
+    "🚚 ¡Envío gratis en todos los pedidos!",
 
-    DESCUENTO:
-      "💸 ¡Descuento especial activo!",
+  DESCUENTO:
+    "💸 ¡10% de descuento en tu pedido!",
 
-    CUPON_1500:
-      "🎁 ¡$1500 de regalo en tu pedido!",
+  SMACK_CUBANITO:
+    "🥜 ¡Te regalamos un Smack Cubanito con tu compra!",
 
-    GOMITAS:
-      "🍬 ¡Caramelos gratis esta noche!",
+  GOMITAS:
+    "🍬 ¡Caramelos gratis esta noche!",
 
-    CAJA_10:
-      "📦 ¡10% OFF en cajas misteriosas!",
-  };
+  CAJA_10:
+    "📦 ¡10% OFF en Cajas Misteriosas!",
+};
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4">

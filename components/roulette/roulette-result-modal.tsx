@@ -66,8 +66,8 @@ export function RouletteResultModal({ prize, onClose }: RouletteResultModalProps
       </div>
     </div>
   );
-}
 
+}
 function getEmoji(tipo: string) {
   switch (tipo) {
     case "ENVIO_GRATIS":
@@ -76,8 +76,8 @@ function getEmoji(tipo: string) {
     case "DESCUENTO":
       return "🏷️";
 
-    case "CUPON_1500":
-      return "🎟️";
+    case "SMACK_CUBANITO":
+      return "🥜";
 
     case "GOMITAS":
       return "🍬";
@@ -91,4 +91,5 @@ function getEmoji(tipo: string) {
     default:
       return "🎰";
   }
+
 }

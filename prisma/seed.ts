@@ -40,11 +40,10 @@ async function main() {
       probabilidad: 20,
     },
     {
-      nombre: "$1500 OFF",
-      tipo: "CUPON_1500",
-      valor: 1500,
-      probabilidad: 15,
-    },
+  nombre: "Smack Cubanito Gratis",
+  tipo: "SMACK_CUBANITO",
+  probabilidad: 15,
+},
     {
       nombre: "Envío Gratis",
       tipo: "ENVIO_GRATIS",
@@ -92,13 +91,12 @@ await prisma.happyHour.createMany({
       tipo: "DESCUENTO",
       valor: 10,
     },
-    {
-      titulo: "Hora Tuki",
-      descripcion:
-        "Cupon de $1500 en tu pedido hasta las 22:30 hs.",
-      tipo: "CUPON_1500",
-      valor: 1500,
-    },
+ {
+  titulo: "Hora Tuki",
+  descripcion:
+    "Te regalamos un Smack Cubanito con tu compra hasta las 22:30 hs.",
+  tipo: "SMACK_CUBANITO",
+},
     {
       titulo: "Hora Tuki",
       descripcion:

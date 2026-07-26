@@ -101,7 +101,7 @@ console.log("HAPPY HOUR RECIBIDO:", body.happyHour);
 
 if (
   happyHour.tipo ===
-  "CUPON_1500"
+  "SMACK_CUBANITO"
 ) {
   descuento +=
     happyHour.valor ?? 0;

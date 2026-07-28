@@ -35,13 +35,17 @@ export function StatusBanner() {
       );
   }, []);
 
-  return abierto ? (
-    <div className="bg-tuki-lime py-2 text-center font-display text-sm font-bold text-black">
-      🟢 TUKI está abierto y esperando tu pedido.
-    </div>
-  ) : (
-    <div className="bg-tuki-night-soft py-3 text-center font-display text-sm font-bold text-tuki-cream">
-      🌙 TUKI está descansando. Volvemos pronto.
-    </div>
-  );
+ return (
+  <div className="sticky top-16 z-40">
+    {abierto ? (
+      <div className="bg-tuki-lime py-2 text-center font-display text-sm font-bold text-black shadow-md">
+        🟢 TUKI está abierto y esperando tu pedido.
+      </div>
+    ) : (
+      <div className="bg-tuki-night-soft py-3 text-center font-display text-sm font-bold text-tuki-cream shadow-md">
+        🌙 TUKI está descansando. Volvemos pronto.
+      </div>
+    )}
+  </div>
+);
 }

@@ -40,7 +40,7 @@ const isActive =
 
   return (
     <div
-      className={`sticky top-16 z-40 overflow-hidden border-b border-white/5 py-2 text-center transition-colors ${
+      className={`className="sticky top-[104px] z-30 overflow-hidden border-b border-white/5 py-2 text-center transition-colors ${
        happyHour
   ? "bg-tuki-turquoise"
   : "bg-tuki-night-soft"

@@ -34,44 +34,53 @@ const [showRegisterModal, setShowRegisterModal] =
   const [result, setResult] = useState<RoulettePrize | null>(null);
 
 const [canSpin, setCanSpin] =
-  useState(false);
-
+  useState(true);
   const [loading, setLoading] =
   useState(false);
  async function checkRoulette() {
-  if (!phone) return;
+  if (!phone) {
+    setCanSpin(true);
+    setLoading(false);
+    return;
+  }
 
   setLoading(true);
 
   try {
     const response = await fetch(
-      `/api/roulette?phone=${phone}`,
+      `/api/roulette?phone=${encodeURIComponent(phone)}`,
       {
         cache: "no-store",
       }
     );
 
-    const data = await response.json();
+    const data =
+      await response.json();
 
-    console.log("PHONE:", phone);
-    console.log("DATA:", data);
-
-    setCanSpin(data.canSpin);
+    setCanSpin(
+      data.canSpin === true
+    );
   } finally {
     setLoading(false);
   }
 }
 
 useEffect(() => {
-  if (!phone) return;
+  if (!phone) {
+    setCanSpin(true);
+    setLoading(false);
+    return;
+  }
 
   checkRoulette();
 
-  const interval = setInterval(() => {
-    checkRoulette();
-  }, 30000);
+  const interval =
+    setInterval(() => {
+      checkRoulette();
+    }, 30000);
 
-  return () => clearInterval(interval);
+  return () =>
+    clearInterval(interval);
 }, [phone]);
 
 

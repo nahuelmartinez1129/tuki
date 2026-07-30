@@ -1,6 +1,51 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+const ARGENTINA_OFFSET_MS =
+  3 * 60 * 60 * 1000;
+
+function getArgentinaParts(date: Date) {
+  const argentinaTime =
+    new Date(
+      date.getTime() -
+        ARGENTINA_OFFSET_MS
+    );
+
+  return {
+    year: argentinaTime.getUTCFullYear(),
+    month: argentinaTime.getUTCMonth(),
+    day: argentinaTime.getUTCDate(),
+    hour: argentinaTime.getUTCHours(),
+  };
+}
+
+function getNextRouletteReset(
+  lastSpin: Date
+) {
+  const {
+    year,
+    month,
+    day,
+  } = getArgentinaParts(
+    lastSpin
+  );
+
+  // 21:00 Argentina = 00:00 UTC del día siguiente.
+  // La ruleta vuelve a habilitarse a las 21:00
+  // del día siguiente al último giro.
+  return new Date(
+    Date.UTC(
+      year,
+      month,
+      day + 2,
+      0,
+      0,
+      0,
+      0
+    )
+  );
+}
+
 export async function GET(
   request: Request
 ) {
@@ -13,8 +58,7 @@ export async function GET(
   if (!phone) {
     return NextResponse.json(
       {
-        error:
-          "phone requerido",
+        error: "phone requerido",
       },
       {
         status: 400,
@@ -38,10 +82,9 @@ export async function GET(
   const lastSpin =
     await prisma.ruleta.findFirst({
       where: {
-        usuario: {
-          phone,
-        },
+        usuarioId: user.id,
       },
+
       orderBy: {
         createdAt: "desc",
       },
@@ -53,64 +96,18 @@ export async function GET(
     });
   }
 
-  const now = new Date(
-  new Date().toLocaleString(
-    "en-US",
-    {
-      timeZone:
-        "America/Argentina/Buenos_Aires",
-    }
-  )
-);
+  const now =
+    new Date();
 
-const nextReset =
-  new Date(
-    new Date(
+  const nextReset =
+    getNextRouletteReset(
       lastSpin.createdAt
-    ).toLocaleString(
-      "en-US",
-      {
-        timeZone:
-          "America/Argentina/Buenos_Aires",
-      }
-    )
-  );
-  nextReset.setDate(
-    nextReset.getDate() + 1
-  );
+    );
 
-  nextReset.setHours(
-    21,
-    0,
-    0,
-    0
-  );
-
-  console.log(
-  "TIMEZONE VPS:",
-  Intl.DateTimeFormat().resolvedOptions().timeZone
-);
-
-console.log(
-  "HORA VPS:",
-  new Date().toString()
-);
-
-console.log(
-  "HORA ARGENTINA:",
-  now.toString()
-);
-
-console.log(
-  "PROXIMO RESET:",
-  nextReset.toString()
-);
-
-console.log(
-  "PUEDE GIRAR:",
-  now >= nextReset
-);
-  if (now >= nextReset) {
+  if (
+    now.getTime() >=
+    nextReset.getTime()
+  ) {
     return NextResponse.json({
       canSpin: true,
     });
@@ -118,66 +115,22 @@ console.log(
 
   return NextResponse.json({
     canSpin: false,
+
     prize:
       lastSpin.premio,
+
     secondsLeft:
-      Math.floor(
-        (
-          nextReset.getTime() -
-          now.getTime()
-        ) / 1000
+      Math.max(
+        0,
+        Math.floor(
+          (
+            nextReset.getTime() -
+            now.getTime()
+          ) / 1000
+        )
       ),
+
+    nextReset:
+      nextReset.toISOString(),
   });
-}
-
-export async function POST(
-  request: Request
-) {
-  const {
-    phone,
-    premio,
-  } =
-    await request.json();
-
-  if (!phone) {
-    return NextResponse.json(
-      {
-        error:
-          "phone requerido",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  let user =
-    await prisma.usuario.findUnique({
-      where: {
-        phone,
-      },
-    });
-
-  // Si no existe, lo creamos
-  if (!user) {
-    user =
-      await prisma.usuario.create({
-        data: {
-          phone,
-        },
-      });
-  }
-
-  const spin =
-    await prisma.ruleta.create({
-      data: {
-        usuarioId:
-          user.id,
-        premio,
-      },
-    });
-
-  return NextResponse.json(
-    spin
-  );
 }

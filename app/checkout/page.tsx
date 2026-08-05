@@ -62,7 +62,8 @@ const [loadingHappyHour, setLoadingHappyHour] =
 
 const [abierto, setAbierto] =
   useState(true);
-
+const [envioBase, setEnvioBase] =
+  useState(800);
   const router = useRouter();
   const { items, subtotal, clearCart } = useCart();
 
@@ -77,9 +78,7 @@ const [abierto, setAbierto] =
 
   const isEmpty = items.length === 0;
 
-const BASE_DELIVERY = 800;
-
-let delivery = BASE_DELIVERY;
+let delivery = envioBase;
 let discount = 0;
 let regalo = "";
 
@@ -103,9 +102,9 @@ if (happyHour) {
       (happyHour.valor / 100);
   }
 
- if (happyHour.tipo === "SMACK_CUBANITO") {
+ if (happyHour.tipo === "GUAYMALLEN") {
   regalo +=
-    "🥜 Smack Cubanito gratis en tu próxima compra ";
+    "🍫 ¡Alfajor Guaymallén gratis! en tu próxima compra ";
 }
 
   if (happyHour.tipo === "GOMITAS") {
@@ -136,9 +135,9 @@ if (
     discount += subtotal * 0.1;
   }
 
-  if (reward.premio === "SMACK_CUBANITO") {
+  if (reward.premio === "GUAYMALLEN") {
   regalo +=
-    "🥜 Smack Cubanito gratis en tu próxima compra ";
+    "🍫 ¡Alfajor Guaymallén gratis! en tu próxima compra ";
 }
 
   if (reward.premio === "GOMITAS") {
@@ -213,6 +212,9 @@ useEffect(() => {
     const data = await response.json();
 
     setAbierto(data.abierto);
+    setEnvioBase(
+  data.envio ?? 800
+);
   }
 
   loadConfig();
@@ -682,7 +684,7 @@ router.push(
 {delivery === 0 ? (
   <div className="flex items-center gap-2">
     <span className="line-through">
-      {formatPrice(BASE_DELIVERY)}
+      {formatPrice(envioBase)}
     </span>
 
     <span className="text-green-500">
@@ -709,8 +711,8 @@ router.push(
   🎁 {
     reward.premio === "GOMITAS"
       ? "Caramelos Gratis"
-      : reward.premio === "SMACK_CUBANITO"
-      ? "Smack Cubanito Gratis"
+      : reward.premio === "GUAYMALLEN"
+      ? "Alfajor Guaymallén gratis"
       : reward.premio === "ENVIO_GRATIS"
       ? "Envío Gratis"
       : reward.premio === "DESCUENTO"

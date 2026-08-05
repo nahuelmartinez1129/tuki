@@ -121,8 +121,8 @@ function traducirBeneficio(tipo: string) {
     case "DESCUENTO":
       return "🏷️ 10% OFF";
 
-    case "SMACK_CUBANITO":
-      return "🥜 Smack Cubanito gratis en tu próxima compra";
+    case "GUAYMALLEN":
+      return "🍫 ¡Alfajor Guaymallén gratis! en tu próxima compra";
 
     case "GOMITAS":
       return "🍬 Caramelos gratis";

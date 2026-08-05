@@ -13,7 +13,7 @@ async function main() {
   await prisma.configuracion.create({
     data: {
       abierto: true,
-      envio: 800,
+      envio: 900,
       whatsapp: "5492291504531",
       nombreNegocio: "TUKI",
     },

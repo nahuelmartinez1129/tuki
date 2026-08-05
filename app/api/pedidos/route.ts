@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-
+import { sendTelegramMessage } from "@/lib/telegram";
 export async function GET() {
   const pedidos =
     await prisma.pedido.findMany({
@@ -101,7 +101,7 @@ console.log("HAPPY HOUR RECIBIDO:", body.happyHour);
 
 if (
   happyHour.tipo ===
-  "SMACK_CUBANITO"
+  "GUAYMALLEN"
 ) {
   //descuento +=
   //  happyHour.valor ?? 0;
@@ -238,6 +238,61 @@ console.log("happyHour DB:", happyHour);
       },
     });
 
+    await fetch(
+  `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      chat_id: process.env.TELEGRAM_CHAT_ID,
+      parse_mode: "HTML",
+      text: `
+🛒 <b>NUEVO PEDIDO #${pedido.numero}</b>
+
+👤 <b>Cliente:</b> ${pedido.nombre}
+📞 <b>Teléfono:</b> ${pedido.telefono}
+📍 <b>Dirección:</b> ${pedido.direccion}
+
+💳 <b>Método de pago:</b> ${
+        pedido.metodoPago === "efectivo"
+          ? "💵 Efectivo"
+          : pedido.metodoPago === "transferencia"
+          ? "🏦 Transferencia"
+          : "No especificado"
+      }
+
+📦 <b>PRODUCTOS</b>
+
+${pedido.items
+  .map(
+    (item) =>
+      `• ${item.nombre} x${item.cantidad}`
+  )
+  .join("\n")}
+
+${
+  pedido.premio
+    ? `\n🎁 <b>Premio:</b> ${pedido.premio}`
+    : ""
+}
+
+${
+  pedido.happyHour
+    ? `\n🔥 <b>Happy Hour:</b> ${pedido.happyHour}`
+    : ""
+}
+
+💰 <b>Subtotal:</b> $${pedido.subtotal}
+💸 <b>Descuento:</b> -$${pedido.descuento}
+🚚 <b>Envío:</b> $${pedido.envio}
+
+✅ <b>TOTAL:</b> $${pedido.total}
+      `,
+    }),
+  }
+);
 
   console.log(
     "PEDIDO CREADO:",

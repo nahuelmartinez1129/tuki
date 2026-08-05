@@ -10,6 +10,8 @@ export default function AdminPage() {
   useState<string | null>(null);
     const [abierto, setAbierto] =
   useState<boolean | null>(null);
+  const [envio, setEnvio] =
+  useState(900);
   const [stats, setStats] =
   useState({
     pedidosHoy: 0,
@@ -28,18 +30,25 @@ useEffect(() => {
   }
 }, []);
 useEffect(() => {
-  async function load() {
-    // Configuración
-    const response = await fetch(
-      "/api/configuracion"
-    );
+  async function loadConfiguracion() {
+    const response =
+      await fetch(
+        "/api/configuracion"
+      );
 
     const data =
       await response.json();
 
-    setAbierto(data.abierto);
+    setAbierto(
+      data.abierto
+    );
 
-    // Dashboard
+    setEnvio(
+      data.envio ?? 900
+    );
+  }
+
+  async function loadDashboard() {
     const dashboard =
       await fetch(
         "/api/admin/dashboard"
@@ -51,10 +60,14 @@ useEffect(() => {
     setStats(statsData);
   }
 
-  load();
+  loadConfiguracion();
+  loadDashboard();
 
   const interval =
-    setInterval(load, 2000);
+    setInterval(
+      loadDashboard,
+      2000
+    );
 
   return () =>
     clearInterval(interval);
@@ -168,6 +181,62 @@ xl:grid-cols-4 gap-6">
     {stats.pendientes}
   </span>
 </p>
+<div className="mt-8">
+  <label className="mb-2 block text-sm text-tuki-cream/70">
+    Precio del envío
+  </label>
+
+  <div className="flex items-center gap-3">
+    <input
+      type="number"
+      value={envio}
+      onChange={(e) =>
+        setEnvio(Number(e.target.value))
+      }
+      className="
+        w-36
+        rounded-xl
+        border
+        border-white/10
+        bg-white/5
+        px-3
+        py-2
+        text-tuki-cream
+      "
+    />
+
+    <button
+      onClick={async () => {
+        await fetch(
+          "/api/configuracion/update",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              abierto,
+              envio,
+            }),
+          }
+        );
+
+        alert("Envío actualizado");
+      }}
+      className="
+        rounded-xl
+        bg-tuki-lime
+        px-4
+        py-2
+        font-bold
+        text-black
+      "
+    >
+      Guardar
+    </button>
+  </div>
+</div>
 
       </div>
 

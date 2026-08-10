@@ -304,29 +304,18 @@ const response = await fetch(
         "application/json",
     },
 
-    body: JSON.stringify({
-       
+  body: JSON.stringify({
   nombre: customerName,
   telefono: phone,
   direccion: address,
 
-  subtotal,
-  descuento: discount,
-  envio: delivery,
-
-  premio: reward?.premio,
- happyHour: happyHour?.tipo,
-
   metodoPago: paymentMethod,
-
-  total,
 
   observaciones: notes,
 
   items: items.map((item) => ({
     nombre: item.name,
     cantidad: item.quantity,
-    precio: item.price,
   })),
 }),
   }

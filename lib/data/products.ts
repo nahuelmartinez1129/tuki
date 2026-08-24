@@ -165,10 +165,11 @@ export const comboProducts: Product[] = [
  */
 export const allProducts: Product[] = [...featuredProducts, ...comboProducts];
 
-export type MenuCategoryGroup = "todos" | "dulces" | "salados" | "bebidas" | "combos";
+export type MenuCategoryGroup = "todos" |"alfajores" | "dulces" | "salados" | "bebidas" | "combos";
 
 export const CATEGORY_GROUP_LABELS: Record<MenuCategoryGroup, string> = {
   todos: "Todos",
+  alfajores: "Alfajores",
   dulces: "Dulces",
   salados: "Salados",
   bebidas: "Bebidas",
@@ -179,17 +180,23 @@ export const CATEGORY_GROUP_LABELS: Record<MenuCategoryGroup, string> = {
 export function getMenuGroup(product: Product): MenuCategoryGroup {
   switch (product.category) {
     case "alfajores":
+      return "alfajores";
+
     case "gomitas":
     case "chocolates":
     case "galletitas":
     case "misterioso":
       return "dulces";
+
     case "papas":
       return "salados";
+
     case "gaseosas":
       return "bebidas";
+
     case "combos":
       return "combos";
+
     default:
       return "todos";
   }

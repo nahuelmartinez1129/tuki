@@ -12,19 +12,17 @@ import {
   Banknote,
   CheckCircle2,
   Landmark,
-  Wallet,
 } from "lucide-react";
-
-
-
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/hooks/use-cart";
-import type { CheckoutOrder, PaymentMethod } from "@/types/cart";
-
+import type {
+  CheckoutOrder,
+  PaymentMethod,
+} from "@/types/cart";
 
 const PAYMENT_METHODS: {
   value: PaymentMethod;
@@ -44,350 +42,545 @@ const PAYMENT_METHODS: {
     helper: "Te pasamos el alias al confirmar",
     icon: Landmark,
   },
-  
+  {
+    value: "mixto",
+    label: "Efectivo + Transferencia",
+    helper: "Pagás una parte de cada forma",
+    icon: Banknote,
+  },
 ];
 
-
 export default function CheckoutPage() {
-  
-
-const [reward, setReward] =
-  useState<{ premio?: string; id?: string } | null>(null);
+  const [reward, setReward] =
+    useState<{
+      premio?: string;
+      id?: string;
+    } | null>(null);
 
   const [happyHour, setHappyHour] =
-  useState<any>(null);
+    useState<any>(null);
 
-const [loadingHappyHour, setLoadingHappyHour] =
-  useState(true);
+  const [loadingHappyHour, setLoadingHappyHour] =
+    useState(true);
 
-const [abierto, setAbierto] =
-  useState(true);
-const [envioBase, setEnvioBase] =
-  useState(800);
+  const [abierto, setAbierto] =
+    useState(true);
+
+  const [envioBase, setEnvioBase] =
+    useState(800);
+
   const router = useRouter();
-  const { items, subtotal, clearCart } = useCart();
 
-  const [customerName, setCustomerName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [notes, setNotes] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("efectivo");
-  const [submittedOrder, setSubmittedOrder] = useState<CheckoutOrder | null>(
+  const {
+    items,
+    subtotal,
+    clearCart,
+  } = useCart();
+
+  const [customerName, setCustomerName] =
+    useState("");
+
+  const [phone, setPhone] =
+    useState("");
+
+  const [address, setAddress] =
+    useState("");
+
+  const [notes, setNotes] =
+    useState("");
+
+  const [paymentMethod, setPaymentMethod] =
+    useState<PaymentMethod>("efectivo");
+
+  const [
+    montoEfectivo,
+    setMontoEfectivo,
+  ] = useState("");
+
+  const [
+    montoTransferencia,
+    setMontoTransferencia,
+  ] = useState("");
+
+  const [
+    submittedOrder,
+    setSubmittedOrder,
+  ] = useState<CheckoutOrder | null>(
     null
   );
 
-  const isEmpty = items.length === 0;
+  const isEmpty =
+    items.length === 0;
 
-let delivery = envioBase;
-let discount = 0;
-let regalo = "";
+  let delivery = envioBase;
+  let discount = 0;
+  let regalo = "";
 
-const caja = items.find(
-  (item) =>
-    item.name
-      .toLowerCase()
-      .includes("caja")
-);
-
-// HAPPY HOUR
-
-if (happyHour) {
-  if (happyHour.tipo === "ENVIO_GRATIS") {
-    delivery = 0;
-  }
-
-  if (happyHour.tipo === "DESCUENTO") {
-    discount +=
-      subtotal *
-      (happyHour.valor / 100);
-  }
-
- if (happyHour.tipo === "GUAYMALLEN") {
-  regalo +=
-    "🍫 ¡Alfajor Guaymallén gratis! en tu próxima compra ";
-}
-
-  if (happyHour.tipo === "GOMITAS") {
-    regalo +=
-      "🍬 Caramelos Gratis (Happy Hour) ";
-  }
-
-  if (
-    happyHour.tipo === "CAJA_10" &&
-    caja
-  ) {
-    discount +=
-      caja.price * 0.1;
-  }
-}
-
-// RULETA
-
-if (
-  reward?.premio &&
-  reward.premio !== "SIN_PREMIO"
-) {
-  if (reward.premio === "ENVIO_GRATIS") {
-    delivery = 0;
-  }
-
-  if (reward.premio === "DESCUENTO") {
-    discount += subtotal * 0.1;
-  }
-
-  if (reward.premio === "GUAYMALLEN") {
-  regalo +=
-    "🍫 ¡Alfajor Guaymallén gratis! en tu próxima compra ";
-}
-
-  if (reward.premio === "GOMITAS") {
-    regalo +=
-      "🍬 Caramelos Gratis ";
-  }
-
-  if (
-    reward.premio === "CAJA_10" &&
-    caja
-  ) {
-    discount +=
-      caja.price * 0.1;
-  }
-}
-const total =
-  Math.max(
-    0,
-    subtotal -
-      discount +
-      delivery
+  const caja = items.find(
+    (item) =>
+      item.name
+        .toLowerCase()
+        .includes("caja")
   );
 
+  /*
+   * ==========================================
+   * HAPPY HOUR
+   * ==========================================
+   */
 
+  if (happyHour) {
+    if (
+      happyHour.tipo ===
+      "ENVIO_GRATIS"
+    ) {
+      delivery = 0;
+    }
 
-const gomitasGratis =
-  happyHour?.tipo === "GOMITAS";
-useEffect(() => {
-  const storedPhone =
-    localStorage.getItem(
-      "tuki_user_phone"
-    );
+    if (
+      happyHour.tipo ===
+      "DESCUENTO"
+    ) {
+      discount +=
+        subtotal *
+        (happyHour.valor / 100);
+    }
 
-  const storedName =
-    localStorage.getItem(
-      "tuki_user_name"
-    );
+    if (
+      happyHour.tipo ===
+      "GUAYMALLEN"
+    ) {
+      regalo +=
+        "🍫 ¡Alfajor Guaymallén gratis! en tu próxima compra ";
+    }
 
-  if (storedPhone) {
-    setPhone(storedPhone);
+    if (
+      happyHour.tipo ===
+      "GOMITAS"
+    ) {
+      regalo +=
+        "🍬 Caramelos Gratis (Happy Hour) ";
+    }
+
+    if (
+      happyHour.tipo ===
+        "CAJA_10" &&
+      caja
+    ) {
+      discount +=
+        caja.price * 0.1;
+    }
   }
 
-  if (storedName) {
-    setCustomerName(
-      storedName
-    );
+  /*
+   * ==========================================
+   * RULETA
+   * ==========================================
+   */
+
+  if (
+    reward?.premio &&
+    reward.premio !==
+      "SIN_PREMIO"
+  ) {
+    if (
+      reward.premio ===
+      "ENVIO_GRATIS"
+    ) {
+      delivery = 0;
+    }
+
+    if (
+      reward.premio ===
+      "DESCUENTO"
+    ) {
+      discount +=
+        subtotal * 0.1;
+    }
+
+    if (
+      reward.premio ===
+      "GUAYMALLEN"
+    ) {
+      regalo +=
+        "🍫 ¡Alfajor Guaymallén gratis! en tu próxima compra ";
+    }
+
+    if (
+      reward.premio ===
+      "GOMITAS"
+    ) {
+      regalo +=
+        "🍬 Caramelos Gratis ";
+    }
+
+    if (
+      reward.premio ===
+        "CAJA_10" &&
+      caja
+    ) {
+      discount +=
+        caja.price * 0.1;
+    }
   }
-}, []);
-useEffect(() => {
-  async function loadReward() {
-    if (!phone) return;
 
-    const response = await fetch(
-      `/api/rewards?phone=${phone}`
+  const total =
+    Math.max(
+      0,
+      subtotal -
+        discount +
+        delivery
     );
 
-    const data =
-      await response.json();
+  /*
+   * ==========================================
+   * VALIDACIÓN DEL PAGO MIXTO
+   * ==========================================
+   */
 
-    setReward(data);
-  }
+  const efectivo =
+    Number(montoEfectivo) || 0;
 
-  loadReward();
-}, [phone]);
+  const transferencia =
+    Number(
+      montoTransferencia
+    ) || 0;
 
-useEffect(() => {
-  async function loadConfig() {
-    const response = await fetch(
-      "/api/configuracion"
-    );
+  const totalMixto =
+    efectivo +
+    transferencia;
 
-    const data = await response.json();
+  const pagoMixtoValido =
+    paymentMethod !== "mixto" ||
+    totalMixto === total;
 
-    setAbierto(data.abierto);
-    setEnvioBase(
-  data.envio ?? 800
-);
-  }
+  const gomitasGratis =
+    happyHour?.tipo ===
+    "GOMITAS";
 
-  loadConfig();
+  /*
+   * ==========================================
+   * CARGAR USUARIO
+   * ==========================================
+   */
 
-  const interval =
-    setInterval(
-      loadConfig,
-      10000
-    );
-
-  return () =>
-    clearInterval(interval);
-
-}, []);
-
-useEffect(() => {
-  async function loadHappyHour() {
-    try {
-      const response = await fetch(
-        "/api/happy-hour",
-        {
-          cache: "no-store",
-        }
+  useEffect(() => {
+    const storedPhone =
+      localStorage.getItem(
+        "tuki_user_phone"
       );
+
+    const storedName =
+      localStorage.getItem(
+        "tuki_user_name"
+      );
+
+    if (storedPhone) {
+      setPhone(storedPhone);
+    }
+
+    if (storedName) {
+      setCustomerName(
+        storedName
+      );
+    }
+  }, []);
+
+  /*
+   * ==========================================
+   * CARGAR PREMIO
+   * ==========================================
+   */
+
+  useEffect(() => {
+    async function loadReward() {
+      if (!phone) return;
+
+      const response =
+        await fetch(
+          `/api/rewards?phone=${phone}`
+        );
 
       const data =
         await response.json();
 
-      console.log(
-        "HAPPY HOUR:",
-        data
+      setReward(data);
+    }
+
+    loadReward();
+  }, [phone]);
+
+  /*
+   * ==========================================
+   * CARGAR CONFIGURACIÓN
+   * ==========================================
+   */
+
+  useEffect(() => {
+    async function loadConfig() {
+      const response =
+        await fetch(
+          "/api/configuracion"
+        );
+
+      const data =
+        await response.json();
+
+      setAbierto(
+        data.abierto
       );
 
-      setHappyHour(data);
-    } finally {
-      setLoadingHappyHour(false);
+      setEnvioBase(
+        data.envio ?? 800
+      );
     }
-  }
 
-  loadHappyHour();
+    loadConfig();
 
-  const interval =
-    setInterval(
-      loadHappyHour,
-      2000
-    );
+    const interval =
+      setInterval(
+        loadConfig,
+        10000
+      );
 
-  return () =>
-    clearInterval(interval);
+    return () =>
+      clearInterval(interval);
+  }, []);
 
-}, []);
+  /*
+   * ==========================================
+   * CARGAR HAPPY HOUR
+   * ==========================================
+   */
+
+  useEffect(() => {
+    async function loadHappyHour() {
+      try {
+        const response =
+          await fetch(
+            "/api/happy-hour",
+            {
+              cache:
+                "no-store",
+            }
+          );
+
+        const data =
+          await response.json();
+
+        console.log(
+          "HAPPY HOUR:",
+          data
+        );
+
+        setHappyHour(data);
+      } finally {
+        setLoadingHappyHour(
+          false
+        );
+      }
+    }
+
+    loadHappyHour();
+
+    const interval =
+      setInterval(
+        loadHappyHour,
+        2000
+      );
+
+    return () =>
+      clearInterval(interval);
+  }, []);
+
+  /*
+   * ==========================================
+   * CREAR PEDIDO
+   * ==========================================
+   */
 
   async function handleSubmit(
-    
-  event: FormEvent<HTMLFormElement>
-) {
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
+
     if (isEmpty) return;
 
-    // Mock: en el futuro esto se reemplaza por un POST a /api/orders.
+    if (
+      paymentMethod ===
+        "mixto" &&
+      !pagoMixtoValido
+    ) {
+      alert(
+        `Los importes deben sumar exactamente ${formatPrice(
+          total
+        )}.`
+      );
+
+      return;
+    }
+
     const order: CheckoutOrder = {
       customerName,
       phone,
       address,
       notes,
       paymentMethod,
+      montoEfectivo:
+        paymentMethod ===
+        "mixto"
+          ? efectivo
+          : undefined,
+      montoTransferencia:
+        paymentMethod ===
+        "mixto"
+          ? transferencia
+          : undefined,
       items,
       subtotal,
       total,
-      reward: reward?.premio,
-      
+      reward:
+        reward?.premio,
     };
 
-   
+    const response =
+      await fetch(
+        "/api/pedidos",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            nombre:
+              customerName,
 
+            telefono:
+              phone,
 
+            direccion:
+              address,
 
+            metodoPago:
+              paymentMethod,
 
+            montoEfectivo:
+              paymentMethod ===
+              "mixto"
+                ? efectivo
+                : null,
 
+            montoTransferencia:
+              paymentMethod ===
+              "mixto"
+                ? transferencia
+                : null,
 
-const response = await fetch(
-  "/api/pedidos",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type":
-        "application/json",
-    },
+            observaciones:
+              notes,
 
-  body: JSON.stringify({
-  nombre: customerName,
-  telefono: phone,
-  direccion: address,
+            items: items.map(
+              (item) => ({
+                nombre:
+                  item.name,
 
-  metodoPago: paymentMethod,
+                cantidad:
+                  item.quantity,
+              })
+            ),
+          }),
+        }
+      );
 
-  observaciones: notes,
+    const pedido =
+      await response.json();
 
-  items: items.map((item) => ({
-    nombre: item.name,
-    cantidad: item.quantity,
-  })),
-}),
-  }
-);
+    console.log(
+      "PEDIDO RECIBIDO:",
+      pedido
+    );
 
-const pedido =
-  await response.json();
+    if (
+      !response.ok ||
+      !pedido.numero
+    ) {
+      alert(
+        pedido.error ??
+          "No se pudo generar el pedido."
+      );
 
-console.log(
-  "PEDIDO RECIBIDO:",
-  pedido
-);
-if (
-  !response.ok ||
-  !pedido.numero
-) {
-  alert(
-    pedido.error ??
-      "No se pudo generar el pedido."
-  );
-
-  return;
-}
-if (
-  reward?.premio &&
-  reward.premio !== "SIN_PREMIO"
-) {
-  await fetch(
-    "/api/rewards/use",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
-      body: JSON.stringify({
-        rewardId: reward.id,
-      }),
+      return;
     }
-  );
 
-  setReward(null);//
-}
+    /*
+     * Marcar premio utilizado
+     */
 
+    if (
+      reward?.premio &&
+      reward.premio !==
+        "SIN_PREMIO"
+    ) {
+      await fetch(
+        "/api/rewards/use",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            rewardId:
+              reward.id,
+          }),
+        }
+      );
 
-localStorage.setItem(
-  "tuki_last_order",
-  pedido.numero.toString()
-);
+      setReward(null);
+    }
 
+    localStorage.setItem(
+      "tuki_last_order",
+      pedido.numero.toString()
+    );
 
-// Vaciar el carrito ANTES de navegar
-clearCart();
+    clearCart();
 
-router.push(
-  `/pedido-exitoso/${pedido.numero}`
-);
+    router.push(
+      `/pedido-exitoso/${pedido.numero}`
+    );
   }
+
+  /*
+   * ==========================================
+   * PEDIDO ENVIADO
+   * ==========================================
+   */
 
   if (submittedOrder) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-4 py-16 text-center">
         <span className="flex h-16 w-16 items-center justify-center rounded-full bg-tuki-lime/15">
-          <CheckCircle2 className="h-8 w-8 text-tuki-lime" strokeWidth={2.5} />
+          <CheckCircle2
+            className="h-8 w-8 text-tuki-lime"
+            strokeWidth={2.5}
+          />
         </span>
+
         <div>
           <h1 className="font-display text-2xl font-extrabold text-foreground">
             ¡Pedido recibido!
           </h1>
+
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            Gracias {submittedOrder.customerName || "por tu pedido"}, la noche ya está preparando algo rico para vos. 🍬. Te contactamos al {submittedOrder.phone} para
-            coordinar la entrega.
+            Gracias{" "}
+            {submittedOrder.customerName ||
+              "por tu pedido"}
+            , la noche ya está preparando algo rico para vos. 🍬
+            Te contactamos al{" "}
+            {submittedOrder.phone}{" "}
+            para coordinar la entrega.
           </p>
         </div>
 
@@ -395,83 +588,117 @@ router.push(
           <p className="font-display text-xs font-bold uppercase tracking-widest text-tuki-lime">
             Resumen
           </p>
+
           <ul className="mt-3 flex flex-col gap-1.5">
-            {submittedOrder.items.map((item) => (
-              <li
-                key={item.id}
-                className="flex items-center justify-between text-sm text-card-foreground"
-              >
-                <span className="truncate pr-2">
-                  {item.name} x{item.quantity}
-                </span>
-                <span className="shrink-0 font-semibold">
-                  {formatPrice(item.price * item.quantity)}
-                </span>
-              </li>
-            ))}
+            {submittedOrder.items.map(
+              (item) => (
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between text-sm text-card-foreground"
+                >
+                  <span className="truncate pr-2">
+                    {item.name} x
+                    {item.quantity}
+                  </span>
+
+                  <span className="shrink-0 font-semibold">
+                    {formatPrice(
+                      item.price *
+                        item.quantity
+                    )}
+                  </span>
+                </li>
+              )
+            )}
           </ul>
-          <div className="mt-3 border-t border-border pt-3 space-y-2">
-  <div className="flex items-center justify-between">
-    <span className="text-sm text-card-foreground">
-      Subtotal
-    </span>
-    <span className="font-semibold">
-      {formatPrice(submittedOrder.subtotal)}
-    </span>
 
-{discount > 0 && (
-  <div className="flex items-center justify-between">
-    <span className="font-display text-sm font-bold text-green-500">
-      Descuento
-    </span>
+          <div className="mt-3 space-y-2 border-t border-border pt-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-card-foreground">
+                Subtotal
+              </span>
 
-    <span className="text-green-500">
-      -{formatPrice(discount)}
-    </span>
-  </div>
-)}
-    
-  </div>
+              <span className="font-semibold">
+                {formatPrice(
+                  submittedOrder.subtotal
+                )}
+              </span>
+            </div>
 
-  <div className="flex items-center justify-between">
-    <span className="text-sm text-card-foreground">
-      Envío
-    </span>
+            {discount > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="font-display text-sm font-bold text-green-500">
+                  Descuento
+                </span>
 
-    <span className="font-semibold">
-      {formatPrice(delivery)}
-    </span>
-  </div>
-{regalo && (
-  <div className="rounded-xl bg-green-500/10 p-3 text-sm text-green-400">
-    {regalo}
-  </div>
-)}
-  <div className="flex items-center justify-between border-t border-border pt-2">
-    <span className="font-display text-sm font-bold text-card-foreground">
-      Total
-    </span>
+                <span className="text-green-500">
+                  -
+                  {formatPrice(
+                    discount
+                  )}
+                </span>
+              </div>
+            )}
 
-    <span className="font-display text-lg font-extrabold text-tuki-lime">
-      {formatPrice(submittedOrder.total)}
-    </span>
-  </div>
-</div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-card-foreground">
+                Envío
+              </span>
+
+              <span className="font-semibold">
+                {formatPrice(
+                  delivery
+                )}
+              </span>
+            </div>
+
+            {regalo && (
+              <div className="rounded-xl bg-green-500/10 p-3 text-sm text-green-400">
+                {regalo}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between border-t border-border pt-2">
+              <span className="font-display text-sm font-bold text-card-foreground">
+                Total
+              </span>
+
+              <span className="font-display text-lg font-extrabold text-tuki-lime">
+                {formatPrice(
+                  submittedOrder.total
+                )}
+              </span>
+            </div>
+          </div>
         </div>
 
-        <Button variant="lime" size="lg" asChild>
-          <Link href="/">Volver al inicio</Link>
+        <Button
+          variant="lime"
+          size="lg"
+          asChild
+        >
+          <Link href="/">
+            Volver al inicio
+          </Link>
         </Button>
       </main>
     );
   }
+
+  /*
+   * ==========================================
+   * CHECKOUT
+   * ==========================================
+   */
 
   return (
     <main className="min-h-screen bg-background py-8">
       <div className="container max-w-2xl">
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() =>
+            router.back()
+          }
           className="mb-6 flex items-center gap-1.5 font-display text-sm font-semibold text-tuki-cream/70 transition-colors hover:text-tuki-lime"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -481,6 +708,7 @@ router.push(
         <h1 className="font-display text-2xl font-extrabold text-foreground sm:text-3xl">
           Finalizar pedido
         </h1>
+
         <p className="mt-1 text-sm text-muted-foreground">
           Completá tus datos para coordinar la entrega.
         </p>
@@ -490,16 +718,28 @@ router.push(
             <p className="font-display text-base font-bold text-card-foreground">
               Tu carrito está vacío
             </p>
+
             <p className="text-sm text-muted-foreground">
               Agregá algún antojo antes de finalizar el pedido.
             </p>
-            <Button variant="lime" asChild>
-              <Link href="/">Ver antojos</Link>
+
+            <Button
+              variant="lime"
+              asChild
+            >
+              <Link href="/">
+                Ver antojos
+              </Link>
             </Button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-8">
-            {/* Datos de contacto y entrega */}
+          <form
+            onSubmit={
+              handleSubmit
+            }
+            className="mt-8 flex flex-col gap-8"
+          >
+            {/* DATOS */}
             <section className="flex flex-col gap-4 rounded-3xl bg-card p-5 shadow-soft">
               <h2 className="font-display text-sm font-bold uppercase tracking-widest text-tuki-lime">
                 Datos de entrega
@@ -512,11 +752,18 @@ router.push(
                 >
                   Nombre y apellido
                 </label>
+
                 <Input
                   id="customerName"
                   required
-                  value={customerName}
-                  onChange={(event) => setCustomerName(event.target.value)}
+                  value={
+                    customerName
+                  }
+                  onChange={(event) =>
+                    setCustomerName(
+                      event.target.value
+                    )
+                  }
                   placeholder="¿Cómo te llamás?"
                 />
               </div>
@@ -528,12 +775,17 @@ router.push(
                 >
                   Teléfono
                 </label>
+
                 <Input
                   id="phone"
                   type="tel"
                   required
                   value={phone}
-                  onChange={(event) => setPhone(event.target.value)}
+                  onChange={(event) =>
+                    setPhone(
+                      event.target.value
+                    )
+                  }
                   placeholder="11 2345 6789"
                 />
               </div>
@@ -545,11 +797,18 @@ router.push(
                 >
                   Dirección
                 </label>
+
                 <Input
                   id="address"
                   required
-                  value={address}
-                  onChange={(event) => setAddress(event.target.value)}
+                  value={
+                    address
+                  }
+                  onChange={(event) =>
+                    setAddress(
+                      event.target.value
+                    )
+                  }
                   placeholder="Calle, número, piso/depto"
                 />
               </div>
@@ -561,200 +820,366 @@ router.push(
                 >
                   Referencias (opcional)
                 </label>
+
                 <Textarea
                   id="notes"
                   value={notes}
-                  onChange={(event) => setNotes(event.target.value)}
+                  onChange={(event) =>
+                    setNotes(
+                      event.target.value
+                    )
+                  }
                   placeholder="Timbre, color de puerta, entre calles..."
                 />
               </div>
             </section>
 
-            {/* Método de pago */}
+            {/* PAGO */}
             <section className="flex flex-col gap-3 rounded-3xl bg-card p-5 shadow-soft">
               <h2 className="font-display text-sm font-bold uppercase tracking-widest text-tuki-lime">
                 Método de pago
               </h2>
 
               <div className="flex flex-col gap-2">
-                {PAYMENT_METHODS.map((method) => {
-                  const Icon = method.icon;
-                  const isSelected = paymentMethod === method.value;
-                  const isDisabled = method.value === "mercado-pago";
+                {PAYMENT_METHODS.map(
+                  (method) => {
+                    const Icon =
+                      method.icon;
 
-                  return (
-                    <label
-                      key={method.value}
-                      className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition-colors ${
-                        isSelected
-                          ? "border-tuki-lime bg-tuki-lime/10"
-                          : "border-white/10 bg-white/5"
-                      } ${isDisabled ? "opacity-50" : ""}`}
-                    >
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value={method.value}
-                        checked={isSelected}
-                        disabled={isDisabled}
-                        onChange={() => setPaymentMethod(method.value)}
-                        className="sr-only"
-                      />
-                      <span
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                    const isSelected =
+                      paymentMethod ===
+                      method.value;
+
+                    return (
+                      <label
+                        key={
+                          method.value
+                        }
+                        className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition-colors ${
                           isSelected
-                            ? "bg-tuki-lime text-tuki-night"
-                            : "bg-white/10 text-card-foreground"
+                            ? "border-tuki-lime bg-tuki-lime/10"
+                            : "border-white/10 bg-white/5"
                         }`}
                       >
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <span className="flex flex-col">
-                        <span className="font-display text-sm font-bold text-card-foreground">
-                          {method.label}
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value={
+                            method.value
+                          }
+                          checked={
+                            isSelected
+                          }
+                          onChange={() =>
+                            setPaymentMethod(
+                              method.value
+                            )
+                          }
+                          className="sr-only"
+                        />
+
+                        <span
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                            isSelected
+                              ? "bg-tuki-lime text-tuki-night"
+                              : "bg-white/10 text-card-foreground"
+                          }`}
+                        >
+                          <Icon className="h-5 w-5" />
                         </span>
-                        <span className="text-xs text-muted-foreground">
-                          {method.helper}
+
+                        <span className="flex flex-col">
+                          <span className="font-display text-sm font-bold text-card-foreground">
+                            {
+                              method.label
+                            }
+                          </span>
+
+                          <span className="text-xs text-muted-foreground">
+                            {
+                              method.helper
+                            }
+                          </span>
                         </span>
-                      </span>
-                    </label>
-                  );
-                })}
+                      </label>
+                    );
+                  }
+                )}
               </div>
+
+              {/* PAGO MIXTO */}
+              {paymentMethod ===
+                "mixto" && (
+                <div className="mt-3 rounded-2xl border border-tuki-lime/20 bg-tuki-night p-4">
+                  <p className="font-display text-sm font-bold text-tuki-cream">
+                    ¿Cómo vas a dividir el pago?
+                  </p>
+
+                  <p className="mt-1 text-xs text-tuki-cream/60">
+                    El total debe coincidir exactamente con el pedido.
+                  </p>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label
+                        htmlFor="montoEfectivo"
+                        className="mb-1.5 block text-xs font-semibold text-tuki-cream/70"
+                      >
+                        💵 Efectivo
+                      </label>
+
+                      <Input
+                        id="montoEfectivo"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={
+                          montoEfectivo
+                        }
+                        onChange={(event) =>
+                          setMontoEfectivo(
+                            event.target
+                              .value
+                          )
+                        }
+                        placeholder="0"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="montoTransferencia"
+                        className="mb-1.5 block text-xs font-semibold text-tuki-cream/70"
+                      >
+                        🏦 Transferencia
+                      </label>
+
+                      <Input
+                        id="montoTransferencia"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={
+                          montoTransferencia
+                        }
+                        onChange={(event) =>
+                          setMontoTransferencia(
+                            event.target
+                              .value
+                          )
+                        }
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+                    <span className="text-sm text-tuki-cream/70">
+                      Total a pagar
+                    </span>
+
+                    <span className="font-bold text-tuki-lime">
+                      {formatPrice(
+                        total
+                      )}
+                    </span>
+                  </div>
+
+                  <div
+                    className={`mt-2 text-right text-sm font-bold ${
+                      pagoMixtoValido
+                        ? "text-green-500"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {pagoMixtoValido
+                      ? "✓ Los importes coinciden"
+                      : `Faltan ${formatPrice(
+                          Math.abs(
+                            total -
+                              totalMixto
+                          )
+                        )}`}
+                  </div>
+                </div>
+              )}
             </section>
 
-            {/* Resumen del pedido */}
+            {/* RESUMEN */}
             <section className="flex flex-col gap-3 rounded-3xl bg-card p-5 shadow-soft">
               <h2 className="font-display text-sm font-bold uppercase tracking-widest text-tuki-lime">
                 Tu pedido
               </h2>
+
               <ul className="flex flex-col gap-1.5">
-                {items.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex items-center justify-between text-sm text-card-foreground"
-                  >
-                    <span className="truncate pr-2">
-                      {item.name} x{item.quantity}
-                    </span>
-                    <span className="shrink-0 font-semibold">
-                      {formatPrice(item.price * item.quantity)}
-                    </span>
-                  </li>
-                ))}
+                {items.map(
+                  (item) => (
+                    <li
+                      key={item.id}
+                      className="flex items-center justify-between text-sm text-card-foreground"
+                    >
+                      <span className="truncate pr-2">
+                        {item.name} x
+                        {
+                          item.quantity
+                        }
+                      </span>
+
+                      <span className="shrink-0 font-semibold">
+                        {formatPrice(
+                          item.price *
+                            item.quantity
+                        )}
+                      </span>
+                    </li>
+                  )
+                )}
               </ul>
-              <div className="border-t border-border pt-3 space-y-2">
-  <div className="flex items-center justify-between">
-    <span className="font-display text-sm font-bold text-card-foreground">
-      Subtotal
-    </span>
 
-    <span>{formatPrice(subtotal)}</span>
-  </div>
+              <div className="space-y-2 border-t border-border pt-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-display text-sm font-bold text-card-foreground">
+                    Subtotal
+                  </span>
 
-{discount > 0 && (
-  <div className="flex items-center justify-between">
-    <span className="text-green-500">
-      Descuento
-    </span>
+                  <span>
+                    {formatPrice(
+                      subtotal
+                    )}
+                  </span>
+                </div>
 
-    <span className="text-green-500">
-      -{formatPrice(discount)}
-    </span>
-  </div>
-)}
-  <div className="flex items-center justify-between">
-    <span className="font-display text-sm font-bold text-card-foreground">
-      Envío
-    </span>
+                {discount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-green-500">
+                      Descuento
+                    </span>
 
-    
+                    <span className="text-green-500">
+                      -
+                      {formatPrice(
+                        discount
+                      )}
+                    </span>
+                  </div>
+                )}
 
-{delivery === 0 ? (
-  <div className="flex items-center gap-2">
-    <span className="line-through">
-      {formatPrice(envioBase)}
-    </span>
+                <div className="flex items-center justify-between">
+                  <span className="font-display text-sm font-bold text-card-foreground">
+                    Envío
+                  </span>
 
-    <span className="text-green-500">
-      GRATIS
-    </span>
-  </div>
-) : (
-  <span>
-    {formatPrice(delivery)}
-  </span>
-)}
-  </div>
-{(reward?.premio || happyHour) && (
-  <div className="rounded-2xl border border-tuki-lime/20 bg-tuki-night p-4">
-   
+                  {delivery ===
+                  0 ? (
+                    <div className="flex items-center gap-2">
+                      <span className="line-through">
+                        {formatPrice(
+                          envioBase
+                        )}
+                      </span>
 
- {reward?.premio && (
-  <>
-    <p className="font-display text-xs font-bold uppercase text-tuki-lime">
-      PREMIO DE LA RULETA
-    </p>
+                      <span className="text-green-500">
+                        GRATIS
+                      </span>
+                    </div>
+                  ) : (
+                    <span>
+                      {formatPrice(
+                        delivery
+                      )}
+                    </span>
+                  )}
+                </div>
 
-<p className="mt-2 text-sm text-tuki-cream">
-  🎁 {
-    reward.premio === "GOMITAS"
-      ? "Caramelos Gratis"
-      : reward.premio === "GUAYMALLEN"
-      ? "Alfajor Guaymallén gratis"
-      : reward.premio === "ENVIO_GRATIS"
-      ? "Envío Gratis"
-      : reward.premio === "DESCUENTO"
-      ? "10% de descuento"
-      : reward.premio === "CAJA_10"
-      ? "10% OFF Caja Misteriosa"
-      : reward.premio
-  }
-</p>
-  </>
-)}
+                {(reward?.premio ||
+                  happyHour) && (
+                  <div className="rounded-2xl border border-tuki-lime/20 bg-tuki-night p-4">
+                    {reward?.premio && (
+                      <>
+                        <p className="font-display text-xs font-bold uppercase text-tuki-lime">
+                          PREMIO DE LA RULETA
+                        </p>
 
-{happyHour && (
-  <>
-    <p className="mt-4 font-display text-xs font-bold uppercase text-tuki-lime">
-      HAPPY HOUR
-    </p>
+                        <p className="mt-2 text-sm text-tuki-cream">
+                          🎁{" "}
+                          {reward.premio ===
+                          "GOMITAS"
+                            ? "Caramelos Gratis"
+                            : reward.premio ===
+                              "GUAYMALLEN"
+                            ? "Alfajor Guaymallén gratis"
+                            : reward.premio ===
+                              "ENVIO_GRATIS"
+                            ? "Envío Gratis"
+                            : reward.premio ===
+                              "DESCUENTO"
+                            ? "10% de descuento"
+                            : reward.premio ===
+                              "CAJA_10"
+                            ? "10% OFF Caja Misteriosa"
+                            : reward.premio}
+                        </p>
+                      </>
+                    )}
 
-    <p className="mt-2 text-sm text-tuki-cream">
-      🔥 {happyHour.titulo}
-    </p>
-  </>
-)}
-  </div>
-)}
-  <div className="flex items-center justify-between pt-2">
-    <span className="font-display text-lg font-bold text-card-foreground">
-      Total
-    </span>
+                    {happyHour && (
+                      <>
+                        <p className="mt-4 font-display text-xs font-bold uppercase text-tuki-lime">
+                          HAPPY HOUR
+                        </p>
 
-    <span className="font-display text-xl font-extrabold text-tuki-lime">
-      {formatPrice(total)}
-    </span>
-  </div>
-</div>
+                        <p className="mt-2 text-sm text-tuki-cream">
+                          🔥{" "}
+                          {
+                            happyHour.titulo
+                          }
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-2">
+                  <span className="font-display text-lg font-bold text-card-foreground">
+                    Total
+                  </span>
+
+                  <span className="font-display text-xl font-extrabold text-tuki-lime">
+                    {formatPrice(
+                      total
+                    )}
+                  </span>
+                </div>
+              </div>
             </section>
-{loadingHappyHour && (
-  <p className="text-center text-sm text-tuki-cream">
-    Cargando promociones...
-  </p>
-)}
-            <Button disabled={
-  !abierto ||
-  loadingHappyHour
-} type="submit" variant="lime" size="lg" className="w-full">
+
+            {loadingHappyHour && (
+              <p className="text-center text-sm text-tuki-cream">
+                Cargando promociones...
+              </p>
+            )}
+
+            <Button
+              disabled={
+                !abierto ||
+                loadingHappyHour ||
+                (paymentMethod ===
+                  "mixto" &&
+                  !pagoMixtoValido)
+              }
+              type="submit"
+              variant="lime"
+              size="lg"
+              className="w-full"
+            >
               Confirmar pedido
             </Button>
 
             {!abierto && (
-  <p className="mt-3 text-center text-sm text-tuki-cream">
-    🌙 TUKI está descansando. Volvemos pronto.
-  </p>
-)}
+              <p className="mt-3 text-center text-sm text-tuki-cream">
+                🌙 TUKI está cerrado. Volvemos pronto.
+              </p>
+            )}
           </form>
         )}
       </div>

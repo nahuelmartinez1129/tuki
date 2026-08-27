@@ -6,6 +6,11 @@ type HistorialFacturacion = {
   fecha: string;
   pedidos: number;
   facturacion: number;
+  descuentos: number;
+  envios: number;
+  efectivo: number;
+  transferencias: number;
+  mixtos: number;
 };
 
 export default function AdminPage() {
@@ -21,7 +26,14 @@ export default function AdminPage() {
   const [stats, setStats] =
     useState<{
       pedidosHoy: number;
+      ventasRealizadas: number;
       facturacion: number;
+      facturacionBruta: number;
+      efectivo: number;
+      transferencias: number;
+      mixtos: number;
+      descuentos: number;
+      envios: number;
       usuarios: number;
       premios: number;
       pendientes: number;
@@ -29,7 +41,14 @@ export default function AdminPage() {
       historialFacturacion: HistorialFacturacion[];
     }>({
       pedidosHoy: 0,
+      ventasRealizadas: 0,
       facturacion: 0,
+      facturacionBruta: 0,
+      efectivo: 0,
+      transferencias: 0,
+      mixtos: 0,
+      descuentos: 0,
+      envios: 0,
       usuarios: 0,
       premios: 0,
       pendientes: 0,
@@ -128,7 +147,10 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {/* Cards */}
+      {/* =====================================================
+          CARDS PRINCIPALES
+      ===================================================== */}
+
       <div
         className="
           mt-10
@@ -151,7 +173,17 @@ export default function AdminPage() {
 
         <div className="rounded-3xl bg-tuki-night-soft p-6">
           <p className="text-sm text-tuki-cream/60">
-            Facturación hoy
+            Ventas realizadas
+          </p>
+
+          <h2 className="mt-2 text-4xl font-bold text-tuki-lime">
+            {stats.ventasRealizadas}
+          </h2>
+        </div>
+
+        <div className="rounded-3xl bg-tuki-night-soft p-6">
+          <p className="text-sm text-tuki-cream/60">
+            Total vendido
           </p>
 
           <h2 className="mt-2 text-4xl font-bold text-tuki-lime">
@@ -168,19 +200,116 @@ export default function AdminPage() {
             {stats.usuarios}
           </h2>
         </div>
+      </div>
 
-        <div className="rounded-3xl bg-tuki-night-soft p-6">
-          <p className="text-sm text-tuki-cream/60">
-            Premios entregados
-          </p>
+      {/* =====================================================
+          FACTURACIÓN / VENTAS
+      ===================================================== */}
 
-          <h2 className="mt-2 text-4xl font-bold text-tuki-lime">
-            {stats.premios}
+      <div className="mt-10 rounded-3xl bg-tuki-night-soft p-8">
+        <div>
+          <h2 className="text-2xl font-bold text-tuki-cream">
+            Facturación / Ventas
           </h2>
+
+          <p className="mt-1 text-sm text-tuki-cream/60">
+            Resumen de las ventas entregadas de hoy.
+          </p>
+        </div>
+
+        <div
+          className="
+            mt-6
+            grid
+            grid-cols-1
+            sm:grid-cols-2
+            lg:grid-cols-4
+            gap-4
+          "
+        >
+          {/* Efectivo */}
+          <div className="rounded-2xl bg-white/5 p-5">
+            <p className="text-sm text-tuki-cream/60">
+              💵 Efectivo
+            </p>
+
+            <p className="mt-2 text-2xl font-bold text-tuki-cream">
+              ${stats.efectivo}
+            </p>
+          </div>
+
+          {/* Transferencias */}
+          <div className="rounded-2xl bg-white/5 p-5">
+            <p className="text-sm text-tuki-cream/60">
+              🏦 Transferencias
+            </p>
+
+            <p className="mt-2 text-2xl font-bold text-tuki-cream">
+              ${stats.transferencias}
+            </p>
+          </div>
+
+          {/* Mixtos */}
+          <div className="rounded-2xl bg-white/5 p-5">
+            <p className="text-sm text-tuki-cream/60">
+              💳 Pagos mixtos
+            </p>
+
+            <p className="mt-2 text-2xl font-bold text-tuki-cream">
+              ${stats.mixtos}
+            </p>
+          </div>
+
+          {/* Descuentos */}
+          <div className="rounded-2xl bg-white/5 p-5">
+            <p className="text-sm text-tuki-cream/60">
+              🏷️ Descuentos
+            </p>
+
+            <p className="mt-2 text-2xl font-bold text-tuki-cream">
+              ${stats.descuentos}
+            </p>
+          </div>
+
+          {/* Envíos */}
+          <div className="rounded-2xl bg-white/5 p-5">
+            <p className="text-sm text-tuki-cream/60">
+              🚚 Envíos
+            </p>
+
+            <p className="mt-2 text-2xl font-bold text-tuki-cream">
+              ${stats.envios}
+            </p>
+          </div>
+
+          {/* Facturación bruta */}
+          <div className="rounded-2xl bg-white/5 p-5">
+            <p className="text-sm text-tuki-cream/60">
+              📊 Facturación bruta
+            </p>
+
+            <p className="mt-2 text-2xl font-bold text-tuki-cream">
+              ${stats.facturacionBruta}
+            </p>
+          </div>
+
+          {/* Total vendido */}
+          <div className="rounded-2xl bg-tuki-lime/10 p-5 sm:col-span-2">
+            <p className="text-sm text-tuki-lime/70">
+              💰 Total vendido
+            </p>
+
+            <p className="mt-2 text-3xl font-bold text-tuki-lime">
+              ${stats.facturacion}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Estado */}
+      {/* =====================================================
+          ESTADO
+      ===================================================== */}
+
       <div className="mt-10 rounded-3xl bg-tuki-night-soft p-8">
         <h2 className="text-2xl font-bold text-tuki-cream">
           Estado actual
@@ -275,7 +404,10 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Historial de facturación */}
+      {/* =====================================================
+          HISTORIAL DE FACTURACIÓN
+      ===================================================== */}
+
       <div className="mt-10 rounded-3xl bg-tuki-night-soft p-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -303,7 +435,7 @@ export default function AdminPage() {
           </div>
         ) : (
           <div className="mt-6 overflow-x-auto">
-            <table className="w-full min-w-[500px]">
+            <table className="w-full min-w-[900px]">
               <thead>
                 <tr className="border-b border-white/10 text-left">
                   <th className="pb-3 text-sm font-bold text-tuki-cream/50">
@@ -316,6 +448,26 @@ export default function AdminPage() {
 
                   <th className="pb-3 text-right text-sm font-bold text-tuki-cream/50">
                     Facturación
+                  </th>
+
+                  <th className="pb-3 text-right text-sm font-bold text-tuki-cream/50">
+                    Efectivo
+                  </th>
+
+                  <th className="pb-3 text-right text-sm font-bold text-tuki-cream/50">
+                    Transferencia
+                  </th>
+
+                  <th className="pb-3 text-right text-sm font-bold text-tuki-cream/50">
+                    Mixtos
+                  </th>
+
+                  <th className="pb-3 text-right text-sm font-bold text-tuki-cream/50">
+                    Descuentos
+                  </th>
+
+                  <th className="pb-3 text-right text-sm font-bold text-tuki-cream/50">
+                    Envíos
                   </th>
                 </tr>
               </thead>
@@ -338,6 +490,26 @@ export default function AdminPage() {
                       <td className="py-4 text-right font-bold text-tuki-lime">
                         ${dia.facturacion}
                       </td>
+
+                      <td className="py-4 text-right text-tuki-cream/70">
+                        ${dia.efectivo}
+                      </td>
+
+                      <td className="py-4 text-right text-tuki-cream/70">
+                        ${dia.transferencias}
+                      </td>
+
+                      <td className="py-4 text-right text-tuki-cream/70">
+                        ${dia.mixtos}
+                      </td>
+
+                      <td className="py-4 text-right text-red-400">
+                        ${dia.descuentos}
+                      </td>
+
+                      <td className="py-4 text-right text-tuki-cream/70">
+                        ${dia.envios}
+                      </td>
                     </tr>
                   )
                 )}
@@ -347,7 +519,10 @@ export default function AdminPage() {
         )}
       </div>
 
-      {/* Últimos pedidos */}
+      {/* =====================================================
+          ÚLTIMOS PEDIDOS
+      ===================================================== */}
+
       <div className="mt-10 rounded-3xl bg-tuki-night-soft p-8">
         <h2 className="text-2xl font-bold text-tuki-cream">
           Últimos pedidos

@@ -10,7 +10,7 @@ datasource db {
 model Usuario {
   id            String   @id @default(cuid())
   nombre        String?
-  phone         String   @unique
+  phone         String?   @unique
   googleId      String?
   createdAt     DateTime @default(now())
   ultimoIngreso DateTime?
@@ -55,6 +55,7 @@ model CuponUso {
   cuponId   String
   usuarioId String
   createdAt DateTime @default(now())
+
   cupon     Cupon    @relation(fields: [cuponId], references: [id])
   usuario   Usuario  @relation(fields: [usuarioId], references: [id])
 }
@@ -81,22 +82,24 @@ model Configuracion {
 }
 
 model Pedido {
-  id            String       @id @default(cuid())
-  numero        Int          @unique
-  nombre        String
-  telefono      String
-  direccion     String?
-  subtotal      Int
-  descuento     Int          @default(0)
-  envio         Int
-  total         Int
-  estado        EstadoPedido @default(PENDIENTE)
-  observaciones String?
-  createdAt     DateTime     @default(now())
-  happyHour     String?
-  premio        String?
-  items         PedidoItem[]
-  metodoPago String?
+  id                  String       @id @default(cuid())
+  numero              Int          @unique
+  nombre              String
+  telefono            String
+  direccion           String?
+  subtotal            Int
+  descuento           Int          @default(0)
+  envio               Int
+  total               Int
+  estado              EstadoPedido @default(PENDIENTE)
+  observaciones       String?
+  createdAt           DateTime     @default(now())
+  happyHour           String?
+  premio              String?
+  items               PedidoItem[]
+  metodoPago          String?
+  montoEfectivo       Int?
+  montoTransferencia  Int?
 }
 
 model PedidoItem {
@@ -105,6 +108,7 @@ model PedidoItem {
   cantidad Int
   precio   Int
   pedidoId String
+
   pedido   Pedido @relation(fields: [pedidoId], references: [id])
 }
 
@@ -123,6 +127,53 @@ model Producto {
   orden          Int      @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model Caja {
+  id               String   @id @default(cuid())
+
+  fecha            DateTime @default(now())
+
+  efectivoInicial  Int
+
+  efectivoVentas   Int      @default(0)
+  efectivoMixto    Int      @default(0)
+
+  retiros          Int      @default(0)
+
+  efectivoEsperado Int?
+  efectivoContado  Int?
+  diferencia       Int?
+
+  estado           EstadoCaja @default(ABIERTA)
+
+  abiertaAt        DateTime @default(now())
+  cerradaAt        DateTime?
+
+  movimientos      MovimientoCaja[]
+}
+
+model MovimientoCaja {
+  id          String   @id @default(cuid())
+
+  tipo        TipoMovimientoCaja
+  monto       Int
+  descripcion String?
+
+  createdAt   DateTime @default(now())
+
+  cajaId      String
+  caja        Caja     @relation(fields: [cajaId], references: [id], onDelete: Cascade)
+}
+
+enum TipoMovimientoCaja {
+  INGRESO
+  RETIRO
+}
+
+enum EstadoCaja {
+  ABIERTA
+  CERRADA
 }
 
 enum EstadoPedido {

@@ -212,12 +212,16 @@ lg:text-5xl font-bold text-tuki-cream">
                 {p.direccion}
               </p>
 
-              <p className="text-tuki-cream/70">
+             <p className="text-tuki-cream/70">
   <strong>Método de pago:</strong>{" "}
   {p.metodoPago === "efectivo"
     ? "💵 Efectivo"
     : p.metodoPago === "transferencia"
     ? "🏦 Transferencia"
+    : p.metodoPago === "mixto"
+    ? `💳 Mixto — 💵 $${p.montoEfectivo ?? 0} + 🏦 $${p.montoTransferencia ?? 0}`
+    : p.metodoPago === "mercado-pago"
+    ? "💳 Mercado Pago"
     : "No especificado"}
 </p>
             </div>

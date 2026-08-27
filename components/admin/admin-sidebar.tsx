@@ -16,6 +16,7 @@ import {
   Users,
   Settings,
   Flame,
+  WalletCards,
   Menu,
   X,
 } from "lucide-react";
@@ -30,6 +31,11 @@ const items = [
     href: "/admin/pedidos",
     label: "Pedidos",
     icon: ShoppingBag,
+  },
+  {
+    href: "/admin/caja",
+    label: "Caja",
+    icon: WalletCards,
   },
   {
     href: "/admin/premios",

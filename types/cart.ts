@@ -27,7 +27,7 @@ export type AddableProduct = Pick<
   "image" |
   "stock"
 >;
-export type PaymentMethod = "efectivo" | "transferencia" | "mercado-pago";
+export type PaymentMethod = "efectivo" | "transferencia" | "mixto" | "mercado-pago";
 
 /**
  * Payload que se genera al finalizar la compra en /checkout.
@@ -39,6 +39,8 @@ export interface CheckoutOrder {
   address: string;
   notes: string;
   paymentMethod: PaymentMethod;
+  montoEfectivo?: number;
+montoTransferencia?: number;
   items: CartItem[];
   subtotal: number;
   total: number;

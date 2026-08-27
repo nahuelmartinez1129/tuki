@@ -13,20 +13,27 @@ export async function GET() {
       },
     });
 
-  return NextResponse.json(pedidos);
+  return NextResponse.json(
+    pedidos
+  );
 }
 
 export async function POST(
   request: Request
 ) {
-  const body = await request.json();
+  const body =
+    await request.json();
 
   console.log(
     "========== PEDIDO NUEVO =========="
   );
 
   console.log(
-    JSON.stringify(body, null, 2)
+    JSON.stringify(
+      body,
+      null,
+      2
+    )
   );
 
   /*
@@ -75,20 +82,53 @@ export async function POST(
 
   /*
    * ==========================================
-   * 3. BUSCAR USUARIO POR TELÉFONO
+   * 3. VALIDAR MÉTODO DE PAGO
+   * ==========================================
+   */
+
+  const metodosValidos = [
+    "efectivo",
+    "transferencia",
+    "mixto",
+    "mercado-pago",
+  ];
+
+  const metodoPago =
+    body.metodoPago;
+
+  if (
+    !metodosValidos.includes(
+      metodoPago
+    )
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Método de pago inválido.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  /*
+   * ==========================================
+   * 4. BUSCAR USUARIO
    * ==========================================
    */
 
   const usuario =
     await prisma.usuario.findUnique({
       where: {
-        phone: body.telefono,
+        phone:
+          body.telefono,
       },
     });
 
   /*
    * ==========================================
-   * 4. BUSCAR PREMIO REAL EN LA DB
+   * 5. BUSCAR PREMIO REAL
    * ==========================================
    */
 
@@ -105,17 +145,18 @@ export async function POST(
         },
 
         orderBy: {
-          createdAt: "desc",
+          createdAt:
+            "desc",
         },
       });
 
     /*
-     * Verificar que el premio
-     * todavía esté dentro de su período.
+     * Verificar vigencia
      */
 
     if (reward) {
-      const now = new Date();
+      const now =
+        new Date();
 
       const nextReset =
         new Date(
@@ -123,7 +164,8 @@ export async function POST(
         );
 
       nextReset.setDate(
-        nextReset.getDate() + 1
+        nextReset.getDate() +
+          1
       );
 
       nextReset.setHours(
@@ -143,7 +185,7 @@ export async function POST(
 
   /*
    * ==========================================
-   * 5. BUSCAR HAPPY HOUR REAL EN LA DB
+   * 6. HAPPY HOUR REAL
    * ==========================================
    */
 
@@ -156,13 +198,17 @@ export async function POST(
 
   /*
    * ==========================================
-   * 6. BUSCAR PRODUCTOS REALES
+   * 7. PRODUCTOS REALES
    * ==========================================
    */
 
   let subtotal = 0;
 
-  const itemsParaCrear = [];
+  const itemsParaCrear: {
+    nombre: string;
+    cantidad: number;
+    precio: number;
+  }[] = [];
 
   for (
     const item of body.items
@@ -186,7 +232,8 @@ export async function POST(
     const producto =
       await prisma.producto.findFirst({
         where: {
-          name: item.nombre,
+          name:
+            item.nombre,
         },
       });
 
@@ -202,7 +249,9 @@ export async function POST(
       );
     }
 
-    if (!producto.activo) {
+    if (
+      !producto.activo
+    ) {
       return NextResponse.json(
         {
           error:
@@ -230,8 +279,7 @@ export async function POST(
     }
 
     /*
-     * IMPORTANTE:
-     * El precio sale de la DB.
+     * PRECIO REAL DE LA DB
      */
 
     subtotal +=
@@ -252,7 +300,7 @@ export async function POST(
 
   /*
    * ==========================================
-   * 7. ENVÍO REAL DESDE CONFIGURACIÓN
+   * 8. ENVÍO REAL
    * ==========================================
    */
 
@@ -261,15 +309,11 @@ export async function POST(
 
   /*
    * ==========================================
-   * 8. CALCULAR DESCUENTOS EN EL SERVIDOR
+   * 9. DESCUENTOS
    * ==========================================
    */
 
   let descuento = 0;
-
-  /*
-   * Buscar si hay una caja.
-   */
 
   const caja =
     itemsParaCrear.find(
@@ -286,11 +330,6 @@ export async function POST(
    */
 
   if (happyHour) {
-
-    /*
-     * Envío gratis
-     */
-
     if (
       happyHour.tipo ===
       "ENVIO_GRATIS"
@@ -298,22 +337,16 @@ export async function POST(
       envio = 0;
     }
 
-    /*
-     * 10% de descuento
-     */
-
     if (
       happyHour.tipo ===
       "DESCUENTO"
     ) {
       descuento +=
         subtotal *
-        ((happyHour.valor ?? 0) / 100);
+        ((happyHour.valor ??
+          0) /
+          100);
     }
-
-    /*
-     * 10% en Caja Misteriosa
-     */
 
     if (
       happyHour.tipo ===
@@ -322,43 +355,42 @@ export async function POST(
     ) {
       descuento +=
         caja.precio *
+        caja.cantidad *
         ((
-          happyHour.valor ?? 10
-        ) / 100) *
-        caja.cantidad;
+          happyHour.valor ??
+          10
+        ) /
+          100);
     }
 
     /*
-     * GUAYMALLEN
-     * No modifica el precio.
-     * Solamente queda registrado
-     * como beneficio.
+     * Guaymallén:
+     * beneficio gratuito.
      */
 
     if (
       happyHour.tipo ===
       "GUAYMALLEN"
     ) {
-      // Beneficio gratuito.
-      // Se registra en el pedido.
+      // No modifica el total.
     }
 
     /*
-     * GOMITAS
-     * No modifica el precio.
+     * Gomitas:
+     * beneficio gratuito.
      */
 
     if (
       happyHour.tipo ===
       "GOMITAS"
     ) {
-      // Beneficio gratuito.
+      // No modifica el total.
     }
   }
 
   /*
    * ==========================================
-   * PREMIO DE RULETA
+   * PREMIO RULETA
    * ==========================================
    */
 
@@ -367,11 +399,6 @@ export async function POST(
     reward.premio !==
       "SIN_PREMIO"
   ) {
-
-    /*
-     * Envío gratis
-     */
-
     if (
       reward.premio ===
       "ENVIO_GRATIS"
@@ -379,21 +406,13 @@ export async function POST(
       envio = 0;
     }
 
-    /*
-     * 10% OFF
-     */
-
     if (
       reward.premio ===
       "DESCUENTO"
     ) {
       descuento +=
-        subtotal * 0.10;
+        subtotal * 0.1;
     }
-
-    /*
-     * 10% Caja Misteriosa
-     */
 
     if (
       reward.premio ===
@@ -402,12 +421,12 @@ export async function POST(
     ) {
       descuento +=
         caja.precio *
-        0.10 *
-        caja.cantidad;
+        caja.cantidad *
+        0.1;
     }
 
     /*
-     * Guaymallén gratis
+     * Guaymallén
      */
 
     if (
@@ -418,7 +437,7 @@ export async function POST(
     }
 
     /*
-     * Gomitas gratis
+     * Gomitas
      */
 
     if (
@@ -431,7 +450,7 @@ export async function POST(
 
   /*
    * ==========================================
-   * 9. SEGURIDAD DEL DESCUENTO
+   * 10. SEGURIDAD DESCUENTO
    * ==========================================
    */
 
@@ -445,7 +464,7 @@ export async function POST(
 
   /*
    * ==========================================
-   * 10. CALCULAR TOTAL REAL
+   * 11. TOTAL REAL
    * ==========================================
    */
 
@@ -476,7 +495,122 @@ export async function POST(
 
   /*
    * ==========================================
-   * 11. NÚMERO DE PEDIDO
+   * 12. VALIDAR PAGO MIXTO
+   * ==========================================
+   */
+
+  let montoEfectivo:
+    number | null = null;
+
+  let montoTransferencia:
+    number | null = null;
+
+  if (
+    metodoPago ===
+    "mixto"
+  ) {
+    montoEfectivo =
+      Number(
+        body.montoEfectivo
+      );
+
+    montoTransferencia =
+      Number(
+        body.montoTransferencia
+      );
+
+    /*
+     * Deben ser números válidos
+     */
+
+    if (
+      !Number.isFinite(
+        montoEfectivo
+      ) ||
+      !Number.isFinite(
+        montoTransferencia
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Los importes del pago mixto no son válidos.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    /*
+     * No permitimos negativos
+     */
+
+    if (
+      montoEfectivo < 0 ||
+      montoTransferencia < 0
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Los importes no pueden ser negativos.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    /*
+     * Deben ser números enteros
+     */
+
+    if (
+      !Number.isInteger(
+        montoEfectivo
+      ) ||
+      !Number.isInteger(
+        montoTransferencia
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Los importes deben ser números enteros.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    /*
+     * SEGURIDAD:
+     * la suma tiene que coincidir
+     * con el TOTAL REAL calculado
+     * por el servidor.
+     */
+
+    if (
+      montoEfectivo +
+        montoTransferencia !==
+      total
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Los importes del pago mixto no coinciden con el total del pedido.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+  }
+
+  /*
+   * ==========================================
+   * 13. NÚMERO DE PEDIDO
    * ==========================================
    */
 
@@ -488,11 +622,12 @@ export async function POST(
     });
 
   const numero =
-    (ultimoPedido?.numero ?? 0) + 1;
+    (ultimoPedido?.numero ??
+      0) + 1;
 
   /*
    * ==========================================
-   * 12. CREAR PEDIDO
+   * 14. CREAR PEDIDO
    * ==========================================
    */
 
@@ -510,8 +645,11 @@ export async function POST(
         direccion:
           body.direccion,
 
-        metodoPago:
-          body.metodoPago,
+        metodoPago,
+
+        montoEfectivo,
+
+        montoTransferencia,
 
         subtotal,
 
@@ -545,7 +683,7 @@ export async function POST(
 
   /*
    * ==========================================
-   * 13. MARCAR PREMIO COMO UTILIZADO
+   * 15. MARCAR PREMIO UTILIZADO
    * ==========================================
    */
 
@@ -563,11 +701,40 @@ export async function POST(
 
   /*
    * ==========================================
-   * 14. TELEGRAM
+   * 16. TELEGRAM
    * ==========================================
    */
 
   try {
+    let informacionPago =
+      "No especificado";
+
+    if (
+      pedido.metodoPago ===
+      "efectivo"
+    ) {
+      informacionPago =
+        "💵 Efectivo";
+    }
+
+    if (
+      pedido.metodoPago ===
+      "transferencia"
+    ) {
+      informacionPago =
+        "🏦 Transferencia";
+    }
+
+    if (
+      pedido.metodoPago ===
+      "mixto"
+    ) {
+      informacionPago = `
+💵 Efectivo: $${pedido.montoEfectivo ?? 0}
+🏦 Transferencia: $${pedido.montoTransferencia ?? 0}
+`;
+    }
+
     const mensaje = `
 🛒 <b>NUEVO PEDIDO #${pedido.numero}</b>
 
@@ -578,15 +745,8 @@ export async function POST(
       "No especificada"
     }
 
-💳 <b>Método de pago:</b> ${
-      pedido.metodoPago ===
-      "efectivo"
-        ? "💵 Efectivo"
-        : pedido.metodoPago ===
-          "transferencia"
-        ? "🏦 Transferencia"
-        : "No especificado"
-    }
+💳 <b>Método de pago:</b>
+${informacionPago}
 
 📦 <b>PRODUCTOS</b>
 
@@ -619,13 +779,18 @@ ${
     await sendTelegramMessage(
       mensaje
     );
-
   } catch (error) {
     console.error(
       "Error enviando pedido a Telegram:",
       error
     );
   }
+
+  /*
+   * ==========================================
+   * 17. RESPUESTA
+   * ==========================================
+   */
 
   console.log(
     "PEDIDO CREADO:",

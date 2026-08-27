@@ -26,3 +26,5 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+
+tuki_produccion_backup.dump

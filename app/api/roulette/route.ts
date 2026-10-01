@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+const ROULETTE_TEST_MODE =
+  process.env.ROULETTE_TEST_MODE === "false";
+
 const ARGENTINA_OFFSET_MS =
   3 * 60 * 60 * 1000;
 
@@ -79,6 +82,21 @@ export async function GET(
     });
   }
 
+  // ======================================================
+  // MODO PRUEBA
+  // ======================================================
+
+  if (ROULETTE_TEST_MODE) {
+    return NextResponse.json({
+      canSpin: true,
+      testMode: true,
+    });
+  }
+
+  // ======================================================
+  // BUSCAR ÚLTIMO GIRO
+  // ======================================================
+
   const lastSpin =
     await prisma.ruleta.findFirst({
       where: {
@@ -95,6 +113,10 @@ export async function GET(
       canSpin: true,
     });
   }
+
+  // ======================================================
+  // VERIFICAR COOLDOWN
+  // ======================================================
 
   const now =
     new Date();

@@ -185,3 +185,15 @@ enum EstadoPedido {
   ENTREGADO
   CANCELADO
 }
+
+model ZonaEnvio {
+  id           String   @id @default(cuid())
+  nombre       String
+  precio       Int
+  compraMinima Int
+  activo       Boolean  @default(true)
+  orden        Int      @default(0)
+  poligono     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

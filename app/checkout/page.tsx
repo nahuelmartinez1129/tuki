@@ -13,10 +13,9 @@ import {
   CheckCircle2,
   Landmark,
 } from "lucide-react";
-
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/hooks/use-cart";
 import type {
@@ -33,35 +32,71 @@ const PAYMENT_METHODS: {
   {
     value: "efectivo",
     label: "Efectivo",
-    helper: "Pagás al recibir tu pedido",
+    helper:
+      "Pagás al recibir tu pedido",
     icon: Banknote,
   },
   {
     value: "transferencia",
     label: "Transferencia",
-    helper: "Te pasamos el alias al confirmar",
+    helper:
+      "Te pasamos el alias al confirmar",
     icon: Landmark,
   },
   {
     value: "mixto",
-    label: "Efectivo + Transferencia",
-    helper: "Pagás una parte de cada forma",
+    label:
+      "Efectivo + Transferencia",
+    helper:
+      "Pagás una parte de cada forma",
     icon: Banknote,
   },
 ];
 
+type CoordenadasEntrega = {
+  lat: number;
+  lng: number;
+};
+
+type ZonaEnvio = {
+  id: string;
+  nombre: string;
+  precio: number;
+  compraMinima: number;
+};
+
 export default function CheckoutPage() {
+  /*
+   * ==========================================
+   * PREMIOS
+   * ==========================================
+   */
+
   const [reward, setReward] =
     useState<{
       premio?: string;
       id?: string;
     } | null>(null);
 
+  /*
+   * ==========================================
+   * HAPPY HOUR
+   * ==========================================
+   */
+
   const [happyHour, setHappyHour] =
     useState<any>(null);
 
-  const [loadingHappyHour, setLoadingHappyHour] =
-    useState(true);
+  const [
+    loadingHappyHour,
+    setLoadingHappyHour,
+  ] = useState(true);
+
+  /*
+   * ==========================================
+   * CONFIGURACIÓN
+   * ==========================================
+   */
 
   const [abierto, setAbierto] =
     useState(true);
@@ -71,26 +106,125 @@ export default function CheckoutPage() {
 
   const router = useRouter();
 
+  /*
+   * ==========================================
+   * CARRITO
+   * ==========================================
+   */
+
   const {
     items,
     subtotal,
     clearCart,
   } = useCart();
 
-  const [customerName, setCustomerName] =
-    useState("");
+  /*
+   * ==========================================
+   * DATOS DEL CLIENTE
+   * ==========================================
+   */
+
+  const [
+    customerName,
+    setCustomerName,
+  ] = useState("");
 
   const [phone, setPhone] =
     useState("");
 
+  /*
+   * ==========================================
+   * DIRECCIÓN
+   * ==========================================
+   *
+   * Ahora usamos calle + número separados.
+   */
+
+  const [calle, setCalle] =
+    useState("");
+
+  const [numero, setNumero] =
+    useState("");
+
+  /*
+   * Dirección completa que se enviará
+   * al pedido.
+   */
   const [address, setAddress] =
     useState("");
+
+  /*
+   * ==========================================
+   * ZONA DE ENVÍO
+   * ==========================================
+   */
+
+  const [zonaEnvio, setZonaEnvio] =
+    useState<ZonaEnvio | null>(
+      null
+    );
+
+  /*
+   * ==========================================
+   * COORDENADAS
+   * ==========================================
+   */
+
+  const [
+    coordenadasEntrega,
+    setCoordenadasEntrega,
+  ] =
+    useState<CoordenadasEntrega | null>(
+      null
+    );
+
+  /*
+   * Dirección devuelta por el servicio
+   * de geocodificación.
+   */
+
+  const [
+    direccionEncontrada,
+    setDireccionEncontrada,
+  ] = useState("");
+
+  /*
+   * ==========================================
+   * VERIFICACIÓN DE DIRECCIÓN
+   * ==========================================
+   */
+
+  const [
+    direccionVerificada,
+    setDireccionVerificada,
+  ] = useState(false);
+
+  const [
+    verificandoDireccion,
+    setVerificandoDireccion,
+  ] = useState(false);
+
+  const [
+    errorDireccion,
+    setErrorDireccion,
+  ] = useState("");
+
+  /*
+   * ==========================================
+   * OTROS DATOS
+   * ==========================================
+   */
 
   const [notes, setNotes] =
     useState("");
 
-  const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>("efectivo");
+  const [
+    paymentMethod,
+    setPaymentMethod,
+  ] =
+    useState<PaymentMethod>(
+      "efectivo"
+    );
 
   const [
     montoEfectivo,
@@ -102,17 +236,32 @@ export default function CheckoutPage() {
     setMontoTransferencia,
   ] = useState("");
 
+  /*
+   * Este estado queda conservado para
+   * mantener compatibilidad con el checkout
+   * anterior.
+   */
   const [
     submittedOrder,
     setSubmittedOrder,
-  ] = useState<CheckoutOrder | null>(
-    null
-  );
+  ] =
+    useState<CheckoutOrder | null>(
+      null
+    );
 
   const isEmpty =
     items.length === 0;
 
-  let delivery = envioBase;
+  /*
+   * ==========================================
+   * ENVÍO
+   * ==========================================
+   */
+
+  let delivery =
+    zonaEnvio?.precio ??
+    envioBase;
+
   let discount = 0;
   let regalo = "";
 
@@ -224,6 +373,12 @@ export default function CheckoutPage() {
     }
   }
 
+  /*
+   * ==========================================
+   * TOTAL
+   * ==========================================
+   */
+
   const total =
     Math.max(
       0,
@@ -234,7 +389,7 @@ export default function CheckoutPage() {
 
   /*
    * ==========================================
-   * VALIDACIÓN DEL PAGO MIXTO
+   * PAGO MIXTO
    * ==========================================
    */
 
@@ -254,9 +409,16 @@ export default function CheckoutPage() {
     paymentMethod !== "mixto" ||
     totalMixto === total;
 
-  const gomitasGratis =
-    happyHour?.tipo ===
-    "GOMITAS";
+  /*
+   * ==========================================
+   * COMPRA MÍNIMA
+   * ==========================================
+   */
+
+  const compraMinimaValida =
+    !!zonaEnvio &&
+    subtotal >=
+      zonaEnvio.compraMinima;
 
   /*
    * ==========================================
@@ -296,15 +458,31 @@ export default function CheckoutPage() {
     async function loadReward() {
       if (!phone) return;
 
-      const response =
-        await fetch(
-          `/api/rewards?phone=${phone}`
+      try {
+        const response =
+          await fetch(
+            `/api/rewards?phone=${encodeURIComponent(
+              phone
+            )}`,
+            {
+              cache: "no-store",
+            }
+          );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data =
+          await response.json();
+
+        setReward(data);
+      } catch (error) {
+        console.error(
+          "Error cargando premio:",
+          error
         );
-
-      const data =
-        await response.json();
-
-      setReward(data);
+      }
     }
 
     loadReward();
@@ -318,21 +496,35 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     async function loadConfig() {
-      const response =
-        await fetch(
-          "/api/configuracion"
+      try {
+        const response =
+          await fetch(
+            "/api/configuracion",
+            {
+              cache: "no-store",
+            }
+          );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data =
+          await response.json();
+
+        setAbierto(
+          data.abierto
         );
 
-      const data =
-        await response.json();
-
-      setAbierto(
-        data.abierto
-      );
-
-      setEnvioBase(
-        data.envio ?? 800
-      );
+        setEnvioBase(
+          data.envio ?? 800
+        );
+      } catch (error) {
+        console.error(
+          "Error cargando configuración:",
+          error
+        );
+      }
     }
 
     loadConfig();
@@ -365,6 +557,10 @@ export default function CheckoutPage() {
             }
           );
 
+        if (!response.ok) {
+          return;
+        }
+
         const data =
           await response.json();
 
@@ -374,6 +570,11 @@ export default function CheckoutPage() {
         );
 
         setHappyHour(data);
+      } catch (error) {
+        console.error(
+          "Error cargando Happy Hour:",
+          error
+        );
       } finally {
         setLoadingHappyHour(
           false
@@ -395,6 +596,265 @@ export default function CheckoutPage() {
 
   /*
    * ==========================================
+   * LIMPIAR UBICACIÓN
+   * ==========================================
+   *
+   * Si el cliente modifica calle o número,
+   * invalidamos la verificación anterior.
+   */
+
+  function limpiarVerificacionDireccion() {
+    setDireccionVerificada(
+      false
+    );
+
+    setZonaEnvio(null);
+
+    setCoordenadasEntrega(
+      null
+    );
+
+    setDireccionEncontrada("");
+
+    setAddress("");
+
+    setErrorDireccion("");
+  }
+
+  /*
+   * ==========================================
+   * VERIFICAR DIRECCIÓN
+   * ==========================================
+   *
+   * Envía:
+   *
+   * calle
+   * numero
+   *
+   * al backend.
+   *
+   * El backend:
+   *
+   * 1. Busca la dirección.
+   * 2. Obtiene lat/lng.
+   * 3. Comprueba la zona.
+   * 4. Devuelve precio y mínimo.
+   */
+
+  async function verificarDireccion() {
+    const calleLimpia =
+      calle.trim();
+
+    const numeroLimpio =
+      numero.trim();
+
+    if (!calleLimpia) {
+      setErrorDireccion(
+        "Ingresá la calle."
+      );
+
+      return;
+    }
+
+    if (!numeroLimpio) {
+      setErrorDireccion(
+        "Ingresá el número."
+      );
+
+      return;
+    }
+
+    setVerificandoDireccion(
+      true
+    );
+
+    setErrorDireccion("");
+
+    setDireccionVerificada(
+      false
+    );
+
+    setZonaEnvio(null);
+
+    setCoordenadasEntrega(
+      null
+    );
+
+    setDireccionEncontrada("");
+
+    try {
+      const params =
+        new URLSearchParams({
+          calle: calleLimpia,
+          numero: numeroLimpio,
+        });
+
+      const response =
+        await fetch(
+          `/api/zonas-envio/verificar-direccion?${params.toString()}`,
+          {
+            cache: "no-store",
+          }
+        );
+
+      const data =
+        await response.json();
+
+      /*
+       * ========================================
+       * ERROR DEL SERVIDOR
+       * ========================================
+       */
+
+      if (!response.ok) {
+        setErrorDireccion(
+          data.error ??
+            "No pudimos verificar la dirección."
+        );
+
+        return;
+      }
+
+      /*
+       * ========================================
+       * NO ENCONTRADA
+       * ========================================
+       */
+
+      if (
+        !data.direccionEncontrada ||
+        !data.coordenadas
+      ) {
+        setErrorDireccion(
+          data.error ??
+            "No pudimos ubicar esa dirección en Miramar."
+        );
+
+        return;
+      }
+
+      /*
+       * ========================================
+       * GUARDAR COORDENADAS
+       * ========================================
+       */
+
+      setCoordenadasEntrega(
+        data.coordenadas
+      );
+
+      /*
+       * ========================================
+       * GUARDAR DIRECCIÓN ENCONTRADA
+       * ========================================
+       */
+
+      const direccion =
+        data.direccion ??
+        `${calleLimpia} ${numeroLimpio}`;
+
+      setDireccionEncontrada(
+        direccion
+      );
+
+      /*
+       * Esta es la dirección que enviamos
+       * al pedido.
+       */
+      setAddress(
+        `${calleLimpia} ${numeroLimpio}`
+      );
+
+      /*
+       * ========================================
+       * DIRECCIÓN FUERA DE ZONA
+       * ========================================
+       */
+
+      if (
+        !data.disponible ||
+        !data.zona
+      ) {
+        setZonaEnvio(null);
+
+        setDireccionVerificada(
+          false
+        );
+
+        setErrorDireccion(
+          data.error ??
+            "Esta dirección está fuera de nuestras zonas de reparto."
+        );
+
+        return;
+      }
+
+      /*
+       * ========================================
+       * ZONA ENCONTRADA
+       * ========================================
+       */
+
+      setZonaEnvio(
+        data.zona
+      );
+
+      /*
+       * La dirección queda completamente
+       * verificada.
+       */
+      setDireccionVerificada(
+        true
+      );
+
+      setErrorDireccion("");
+
+      /*
+       * ========================================
+       * SCROLL AL RESUMEN
+       * ========================================
+       */
+
+      setTimeout(() => {
+        document
+          .getElementById(
+            "resumen-pedido"
+          )
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+      }, 100);
+    } catch (error) {
+      console.error(
+        "Error verificando dirección:",
+        error
+      );
+
+      setDireccionVerificada(
+        false
+      );
+
+      setZonaEnvio(null);
+
+      setCoordenadasEntrega(
+        null
+      );
+
+      setDireccionEncontrada("");
+
+      setErrorDireccion(
+        "No se pudo verificar la dirección. Intentá nuevamente."
+      );
+    } finally {
+      setVerificandoDireccion(
+        false
+      );
+    }
+  }
+
+  /*
+   * ==========================================
    * CREAR PEDIDO
    * ==========================================
    */
@@ -404,7 +864,48 @@ export default function CheckoutPage() {
   ) {
     event.preventDefault();
 
-    if (isEmpty) return;
+    if (isEmpty) {
+      return;
+    }
+
+    /*
+     * La dirección debe estar verificada.
+     */
+
+    if (
+      !direccionVerificada ||
+      !zonaEnvio ||
+      !coordenadasEntrega
+    ) {
+      alert(
+        "Primero verificá tu dirección."
+      );
+
+      return;
+    }
+
+    /*
+     * Compra mínima.
+     */
+
+    if (
+      subtotal <
+      zonaEnvio.compraMinima
+    ) {
+      alert(
+        `El pedido mínimo para ${
+          zonaEnvio.nombre
+        } es de ${formatPrice(
+          zonaEnvio.compraMinima
+        )}.`
+      );
+
+      return;
+    }
+
+    /*
+     * Pago mixto.
+     */
 
     if (
       paymentMethod ===
@@ -420,10 +921,29 @@ export default function CheckoutPage() {
       return;
     }
 
+    /*
+     * ========================================
+     * DIRECCIÓN COMPLETA
+     * ========================================
+     */
+
+    const direccionCompleta =
+      `${calle.trim()} ${numero.trim()}`.trim();
+
+    /*
+     * ========================================
+     * OBJETO LOCAL
+     * ========================================
+     *
+     * Lo conservamos porque forma parte
+     * del flujo anterior.
+     */
+
     const order: CheckoutOrder = {
       customerName,
       phone,
-      address,
+      address:
+        direccionCompleta,
       notes,
       paymentMethod,
       montoEfectivo:
@@ -443,113 +963,159 @@ export default function CheckoutPage() {
         reward?.premio,
     };
 
-    const response =
-      await fetch(
-        "/api/pedidos",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            nombre:
-              customerName,
-
-            telefono:
-              phone,
-
-            direccion:
-              address,
-
-            metodoPago:
-              paymentMethod,
-
-            montoEfectivo:
-              paymentMethod ===
-              "mixto"
-                ? efectivo
-                : null,
-
-            montoTransferencia:
-              paymentMethod ===
-              "mixto"
-                ? transferencia
-                : null,
-
-            observaciones:
-              notes,
-
-            items: items.map(
-              (item) => ({
-                nombre:
-                  item.name,
-
-                cantidad:
-                  item.quantity,
-              })
-            ),
-          }),
-        }
-      );
-
-    const pedido =
-      await response.json();
-
+    /*
+     * Evitamos warning de variable
+     * no utilizada mientras mantenemos
+     * el objeto para compatibilidad.
+     */
     console.log(
-      "PEDIDO RECIBIDO:",
-      pedido
+      "ORDEN CHECKOUT:",
+      order
     );
-
-    if (
-      !response.ok ||
-      !pedido.numero
-    ) {
-      alert(
-        pedido.error ??
-          "No se pudo generar el pedido."
-      );
-
-      return;
-    }
 
     /*
-     * Marcar premio utilizado
+     * ========================================
+     * ENVIAR AL BACKEND
+     * ========================================
      */
 
-    if (
-      reward?.premio &&
-      reward.premio !==
-        "SIN_PREMIO"
-    ) {
-      await fetch(
-        "/api/rewards/use",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            rewardId:
-              reward.id,
-          }),
-        }
+    try {
+      const response =
+        await fetch(
+          "/api/pedidos",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              nombre:
+                customerName,
+
+              telefono:
+                phone,
+
+              direccion:
+                direccionCompleta,
+
+              zonaId:
+                zonaEnvio.id,
+
+              coordenadasEntrega:
+                coordenadasEntrega,
+
+              direccionEncontrada:
+                direccionEncontrada,
+
+              metodoPago:
+                paymentMethod,
+
+              montoEfectivo:
+                paymentMethod ===
+                "mixto"
+                  ? efectivo
+                  : null,
+
+              montoTransferencia:
+                paymentMethod ===
+                "mixto"
+                  ? transferencia
+                  : null,
+
+              observaciones:
+                notes,
+
+              items: items.map(
+                (item) => ({
+                  nombre:
+                    item.name,
+
+                  cantidad:
+                    item.quantity,
+                })
+              ),
+            }),
+          }
+        );
+
+      const pedido =
+        await response.json();
+
+      console.log(
+        "PEDIDO RECIBIDO:",
+        pedido
       );
 
-      setReward(null);
+      if (
+        !response.ok ||
+        !pedido.numero
+      ) {
+        alert(
+          pedido.error ??
+            "No se pudo generar el pedido."
+        );
+
+        return;
+      }
+
+      /*
+       * ======================================
+       * MARCAR PREMIO UTILIZADO
+       * ======================================
+       */
+
+      if (
+        reward?.premio &&
+        reward.premio !==
+          "SIN_PREMIO"
+      ) {
+        if (reward.id) {
+          await fetch(
+            "/api/rewards/use",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify({
+                rewardId:
+                  reward.id,
+              }),
+            }
+          );
+        }
+
+        setReward(null);
+      }
+
+      /*
+       * ======================================
+       * GUARDAR PEDIDO
+       * ======================================
+       */
+
+      localStorage.setItem(
+        "tuki_last_order",
+        pedido.numero.toString()
+      );
+
+      clearCart();
+
+      router.push(
+        `/pedido-exitoso/${pedido.numero}`
+      );
+    } catch (error) {
+      console.error(
+        "Error creando pedido:",
+        error
+      );
+
+      alert(
+        "Ocurrió un error al crear el pedido. Intentá nuevamente."
+      );
     }
-
-    localStorage.setItem(
-      "tuki_last_order",
-      pedido.numero.toString()
-    );
-
-    clearCart();
-
-    router.push(
-      `/pedido-exitoso/${pedido.numero}`
-    );
   }
 
   /*
@@ -739,11 +1305,16 @@ export default function CheckoutPage() {
             }
             className="mt-8 flex flex-col gap-8"
           >
-            {/* DATOS */}
+            {/* =====================================
+                DATOS DE ENTREGA
+            ====================================== */}
+
             <section className="flex flex-col gap-4 rounded-3xl bg-card p-5 shadow-soft">
               <h2 className="font-display text-sm font-bold uppercase tracking-widest text-tuki-lime">
                 Datos de entrega
               </h2>
+
+              {/* NOMBRE */}
 
               <div className="flex flex-col gap-1.5">
                 <label
@@ -768,6 +1339,8 @@ export default function CheckoutPage() {
                 />
               </div>
 
+              {/* TELÉFONO */}
+
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="phone"
@@ -790,35 +1363,165 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="address"
-                  className="font-display text-xs font-semibold text-card-foreground/80"
-                >
-                  Dirección
-                </label>
+              {/* =================================
+                  DIRECCIÓN
+              ================================== */}
 
-                <Input
-                  id="address"
-                  required
-                  value={
-                    address
+              <div className="flex flex-col gap-3">
+                <div>
+                  <h3 className="font-display text-sm font-bold text-card-foreground">
+                    ¿Dónde te entregamos?
+                  </h3>
+
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Ingresá la calle y el número de tu domicilio.
+                  </p>
+                </div>
+
+                {/* CALLE + NÚMERO */}
+
+                <div className="grid grid-cols-[1fr_120px] gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      htmlFor="calle"
+                      className="font-display text-xs font-semibold text-card-foreground/80"
+                    >
+                      Calle
+                    </label>
+
+                    <Input
+                      id="calle"
+                      required
+                      value={calle}
+                      onChange={(event) => {
+                        setCalle(
+                          event.target
+                            .value
+                        );
+
+                        limpiarVerificacionDireccion();
+                      }}
+                      placeholder="Ej: 20"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      htmlFor="numero"
+                      className="font-display text-xs font-semibold text-card-foreground/80"
+                    >
+                      Número
+                    </label>
+
+                    <Input
+                      id="numero"
+                      required
+                      value={numero}
+                      onChange={(event) => {
+                        setNumero(
+                          event.target
+                            .value
+                        );
+
+                        limpiarVerificacionDireccion();
+                      }}
+                      placeholder="Ej: 1234"
+                    />
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Por ejemplo: Calle 20, número 1234.
+                </p>
+
+                {/* BOTÓN VERIFICAR */}
+
+                <Button
+                  type="button"
+                  variant="lime"
+                  onClick={
+                    verificarDireccion
                   }
-                  onChange={(event) =>
-                    setAddress(
-                      event.target.value
-                    )
+                  disabled={
+                    verificandoDireccion ||
+                    !calle.trim() ||
+                    !numero.trim()
                   }
-                  placeholder="Calle, número, piso/depto"
-                />
+                  className="w-full"
+                >
+                  {verificandoDireccion
+                    ? "Verificando dirección..."
+                    : "📍 Verificar dirección"}
+                </Button>
+
+                {/* =================================
+                    DIRECCIÓN CONFIRMADA
+                ================================== */}
+
+                {direccionVerificada &&
+                  zonaEnvio && (
+                    <div className="rounded-2xl border border-green-500/20 bg-green-500/10 p-4">
+                      <p className="font-display text-sm font-bold text-green-400">
+                        ✓ Dirección verificada
+                      </p>
+
+                      <p className="mt-1 text-sm font-semibold text-card-foreground">
+                        {direccionEncontrada ||
+                          `${calle} ${numero}`}
+                      </p>
+
+                      <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+                        <p>
+                          📍 Zona:{" "}
+                          <span className="font-semibold text-card-foreground">
+                            {
+                              zonaEnvio.nombre
+                            }
+                          </span>
+                        </p>
+
+                        <p>
+                          🚚 Envío:{" "}
+                          <span className="font-semibold text-card-foreground">
+                            {formatPrice(
+                              zonaEnvio.precio
+                            )}
+                          </span>
+                        </p>
+
+                        <p>
+                          🛒 Compra mínima:{" "}
+                          <span className="font-semibold text-card-foreground">
+                            {formatPrice(
+                              zonaEnvio.compraMinima
+                            )}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                {/* =================================
+                    ERROR
+                ================================== */}
+
+                {errorDireccion && (
+                  <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
+                    <p className="text-sm font-medium text-red-400">
+                      ❌ {errorDireccion}
+                    </p>
+                  </div>
+                )}
               </div>
+
+              {/* OBSERVACIONES */}
 
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="notes"
                   className="font-display text-xs font-semibold text-card-foreground/80"
                 >
-                  Referencias (opcional)
+                  Observaciones
                 </label>
 
                 <Textarea
@@ -829,12 +1532,15 @@ export default function CheckoutPage() {
                       event.target.value
                     )
                   }
-                  placeholder="Timbre, color de puerta, entre calles..."
+                  placeholder="Ej: timbre rojo, puerta de rejas..."
                 />
               </div>
             </section>
 
-            {/* PAGO */}
+            {/* =====================================
+                MÉTODO DE PAGO
+            ====================================== */}
+
             <section className="flex flex-col gap-3 rounded-3xl bg-card p-5 shadow-soft">
               <h2 className="font-display text-sm font-bold uppercase tracking-widest text-tuki-lime">
                 Método de pago
@@ -908,6 +1614,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* PAGO MIXTO */}
+
               {paymentMethod ===
                 "mixto" && (
                 <div className="mt-3 rounded-2xl border border-tuki-lime/20 bg-tuki-night p-4">
@@ -1005,8 +1712,14 @@ export default function CheckoutPage() {
               )}
             </section>
 
-            {/* RESUMEN */}
-            <section className="flex flex-col gap-3 rounded-3xl bg-card p-5 shadow-soft">
+            {/* =====================================
+                RESUMEN
+            ====================================== */}
+
+            <section
+              id="resumen-pedido"
+              className="flex flex-col gap-3 rounded-3xl bg-card p-5 shadow-soft"
+            >
               <h2 className="font-display text-sm font-bold uppercase tracking-widest text-tuki-lime">
                 Tu pedido
               </h2>
@@ -1037,6 +1750,8 @@ export default function CheckoutPage() {
               </ul>
 
               <div className="space-y-2 border-t border-border pt-3">
+                {/* SUBTOTAL */}
+
                 <div className="flex items-center justify-between">
                   <span className="font-display text-sm font-bold text-card-foreground">
                     Subtotal
@@ -1048,6 +1763,39 @@ export default function CheckoutPage() {
                     )}
                   </span>
                 </div>
+
+                {/* COMPRA MÍNIMA */}
+
+                {zonaEnvio && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      Compra mínima
+                    </span>
+
+                    <span className="text-sm font-semibold">
+                      {formatPrice(
+                        zonaEnvio.compraMinima
+                      )}
+                    </span>
+                  </div>
+                )}
+
+                {/* AVISO COMPRA MÍNIMA */}
+
+                {zonaEnvio &&
+                  subtotal <
+                    zonaEnvio.compraMinima && (
+                    <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
+                      Te faltan{" "}
+                      {formatPrice(
+                        zonaEnvio.compraMinima -
+                          subtotal
+                      )}{" "}
+                      para alcanzar el mínimo de compra.
+                    </div>
+                  )}
+
+                {/* DESCUENTO */}
 
                 {discount > 0 && (
                   <div className="flex items-center justify-between">
@@ -1064,6 +1812,8 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
+                {/* ENVÍO */}
+
                 <div className="flex items-center justify-between">
                   <span className="font-display text-sm font-bold text-card-foreground">
                     Envío
@@ -1074,7 +1824,8 @@ export default function CheckoutPage() {
                     <div className="flex items-center gap-2">
                       <span className="line-through">
                         {formatPrice(
-                          envioBase
+                          zonaEnvio?.precio ??
+                            envioBase
                         )}
                       </span>
 
@@ -1090,6 +1841,8 @@ export default function CheckoutPage() {
                     </span>
                   )}
                 </div>
+
+                {/* PREMIOS / HAPPY HOUR */}
 
                 {(reward?.premio ||
                   happyHour) && (
@@ -1139,6 +1892,8 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
+                {/* TOTAL */}
+
                 <div className="flex items-center justify-between pt-2">
                   <span className="font-display text-lg font-bold text-card-foreground">
                     Total
@@ -1153,16 +1908,28 @@ export default function CheckoutPage() {
               </div>
             </section>
 
+            {/* =====================================
+                CARGANDO PROMOCIONES
+            ====================================== */}
+
             {loadingHappyHour && (
               <p className="text-center text-sm text-tuki-cream">
                 Cargando promociones...
               </p>
             )}
 
+            {/* =====================================
+                CONFIRMAR PEDIDO
+            ====================================== */}
+
             <Button
               disabled={
                 !abierto ||
                 loadingHappyHour ||
+                !direccionVerificada ||
+                !zonaEnvio ||
+                !coordenadasEntrega ||
+                !compraMinimaValida ||
                 (paymentMethod ===
                   "mixto" &&
                   !pagoMixtoValido)
@@ -1174,6 +1941,12 @@ export default function CheckoutPage() {
             >
               Confirmar pedido
             </Button>
+
+            {!direccionVerificada && (
+              <p className="text-center text-xs text-tuki-cream/50">
+                📍 Primero verificá tu dirección para conocer la zona y el costo de envío.
+              </p>
+            )}
 
             {!abierto && (
               <p className="mt-3 text-center text-sm text-tuki-cream">

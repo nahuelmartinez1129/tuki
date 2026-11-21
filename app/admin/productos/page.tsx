@@ -65,6 +65,37 @@ console.log("STATUS:", response.status);
     load();
   }, []);
 
+  const [busqueda, setBusqueda] =
+    useState("");
+
+  // minúsculas y sin tildes, para que "jorgelin" encuentre "Jorgelín"
+  function normalizar(texto: string) {
+    return texto
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "");
+  }
+
+  const terminos = normalizar(busqueda)
+    .split(" ")
+    .filter(Boolean);
+
+  const productosFiltrados =
+    productos.filter((p) => {
+      const texto = normalizar(
+        [
+          p.name,
+          p.description,
+          p.category,
+          ...(p.tags ?? []),
+        ].join(" ")
+      );
+
+      return terminos.every((t) =>
+        texto.includes(t)
+      );
+    });
+
   async function guardar() {
   await fetch(
   editingId
@@ -526,8 +557,58 @@ async function eliminar(
 </button>
 </div>
 )}
-      <div className="mt-10 space-y-4">
-        {productos.map((p) => (
+      <div className="sticky top-0 z-10 mt-10 bg-tuki-night py-3">
+        <div className="relative">
+          <input
+            type="search"
+            value={busqueda}
+            onChange={(e) =>
+              setBusqueda(e.target.value)
+            }
+            placeholder="Buscar producto por nombre, categoría o tag..."
+            className="
+              w-full
+              rounded-2xl
+              bg-tuki-night-soft
+              p-4
+              pr-12
+              text-tuki-cream
+              outline-none
+              border
+              border-white/10
+              focus:border-tuki-lime
+            "
+          />
+
+          {busqueda && (
+            <button
+              onClick={() =>
+                setBusqueda("")
+              }
+              aria-label="Limpiar búsqueda"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-tuki-cream/60 hover:text-tuki-cream"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        <p className="mt-2 text-sm text-tuki-cream/60">
+          {busqueda
+            ? `${productosFiltrados.length} de ${productos.length} productos`
+            : `${productos.length} productos`}
+        </p>
+      </div>
+
+      <div className="mt-4 space-y-4">
+        {busqueda &&
+          productosFiltrados.length === 0 && (
+            <p className="text-tuki-cream/60">
+              No se encontraron productos para &quot;{busqueda}&quot;.
+            </p>
+          )}
+
+        {productosFiltrados.map((p) => (
           <div
             key={p.id}
             className="

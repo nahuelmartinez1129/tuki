@@ -239,10 +239,10 @@ export default function HappyHourPage() {
         if (
           Number.isNaN(valor) ||
           valor <= 0 ||
-          valor > 100
+          valor > 10
         ) {
           throw new Error(
-            "El porcentaje debe estar entre 1 y 100."
+            "El porcentaje debe estar entre 1 y 10."
           );
         }
       }
@@ -708,7 +708,7 @@ export default function HappyHourPage() {
                 <input
                   type="number"
                   min="1"
-                  max="100"
+                  max="10"
                   value={form.valor}
                   onChange={(e) =>
                     handleChange(

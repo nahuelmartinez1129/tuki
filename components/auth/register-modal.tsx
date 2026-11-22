@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { formatPrice } from "@/lib/format";
+import { REGLAS } from "@/lib/promociones";
 
 type Props = {
   open: boolean;
@@ -43,7 +45,8 @@ export function RegisterModal({
 
     if (!response.ok) {
       alert(
-        "Error al registrarte."
+        data?.error ??
+          "Error al registrarte."
       );
       return;
     }
@@ -77,9 +80,25 @@ export function RegisterModal({
       return;
     }
 
+    /*
+     * Usuario nuevo: le recordamos el bono
+     * de bienvenida.
+     */
+    setWelcomeMessage(
+      `¡Bienvenido, ${data.nombre}! Tenés ${formatPrice(
+        REGLAS.bienvenidaDescuento
+      )} OFF en tu primera compra desde ${formatPrice(
+        REGLAS.bienvenidaMinimo
+      )}.`
+    );
+
     setTimeout(() => {
-  onClose();
-}, 100);
+      onClose();
+    }, 100);
+
+    setTimeout(() => {
+      setWelcomeMessage("");
+    }, 4000);
   }
 
   if (
@@ -112,6 +131,11 @@ export function RegisterModal({
             </p>
 
             <ul className="mt-3 space-y-1 text-sm text-tuki-cream">
+              <li>
+                🎁 {formatPrice(REGLAS.bienvenidaDescuento)} OFF en tu
+                primera compra (desde{" "}
+                {formatPrice(REGLAS.bienvenidaMinimo)})
+              </li>
               <li>🎰 Ruleta diaria</li>
               <li>🎁 Premios exclusivos</li>
               <li>🔥 Happy Hour</li>

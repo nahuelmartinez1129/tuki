@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ProductCard } from "@/components/product/product-card";
 import { CategoryTabs } from "@/components/menu/category-tabs";
 import { ProductSearch } from "@/components/menu/product-search";
+import { BonoBienvenidaBanner } from "@/components/promo/bono-bienvenida";
 import { allProducts, getMenuGroup, type MenuCategoryGroup } from "@/lib/data/products";
 import type { Product } from "@/types/product";
 
@@ -111,6 +112,7 @@ export function MenuClient({
         </div>
 
         <div className="container mt-6 flex flex-col gap-4">
+          <BonoBienvenidaBanner />
           <ProductSearch value={query} onChange={setQuery} />
           <CategoryTabs active={category} onChange={setCategory} />
 

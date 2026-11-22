@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { exigirAdmin } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,9 @@ export const revalidate = 0;
 // ======================================================
 
 export async function GET() {
+  const noAutorizado = await exigirAdmin();
+  if (noAutorizado) return noAutorizado;
+
   try {
     const happyHours = await prisma.happyHour.findMany({
       orderBy: {

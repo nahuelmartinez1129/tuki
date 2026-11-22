@@ -45,6 +45,8 @@ model Cupon {
   valor        Int?
   maxUsos      Int
   usosActuales Int        @default(0)
+  compraMinima Int        @default(0)
+  topeDescuento Int?
   activo       Boolean    @default(true)
   createdAt    DateTime   @default(now())
   usos         CuponUso[]
@@ -87,6 +89,8 @@ model Pedido {
   nombre              String
   telefono            String
   direccion           String?
+  latitud             Float?
+  longitud            Float?
   subtotal            Int
   descuento           Int          @default(0)
   envio               Int
@@ -100,6 +104,8 @@ model Pedido {
   metodoPago          String?
   montoEfectivo       Int?
   montoTransferencia  Int?
+
+  @@index([telefono])
 }
 
 model PedidoItem {

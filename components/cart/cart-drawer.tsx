@@ -5,6 +5,7 @@ import { ShoppingBag, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { CartItem } from "@/components/cart/cart-item";
+import { BonoBienvenidaProgreso } from "@/components/promo/bono-bienvenida";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/hooks/use-cart";
 import { useEffect, useState } from "react";
@@ -113,6 +114,8 @@ useEffect(() => {
 
         {/* Footer: subtotal + acciones */}
         <div className="border-t border-white/5 px-5 py-4">
+          <BonoBienvenidaProgreso subtotal={subtotal} />
+
           <div className="mb-4 flex items-center justify-between">
             <span className="font-display text-sm font-semibold text-tuki-cream/70">
               Subtotal

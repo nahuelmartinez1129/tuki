@@ -4,6 +4,8 @@ import Link from "next/link";
 import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { formatPrice } from "@/lib/format";
+import { REGLAS } from "@/lib/promociones";
 
 interface RouletteResultModalProps {
   prize: {
@@ -69,7 +71,14 @@ export function RouletteResultModal({
         {/* Descripción */}
         {!isNoPrize && !isRetry && (
           <p className="mt-2 text-sm text-tuki-cream/70">
-            Se aplica automáticamente en tu próximo pedido.
+            Se aplica automáticamente en tu próximo pedido
+            desde{" "}
+            {formatPrice(
+              prize.tipo === "ENVIO_GRATIS"
+                ? REGLAS.premioEnvioGratisMinimo
+                : REGLAS.premioMinimo
+            )}
+            . Válido por {REGLAS.premioVigenciaHoras} horas.
           </p>
         )}
 
@@ -115,6 +124,7 @@ function getEmoji(tipo: string) {
       return "🏷️";
 
     case "ALFAJOR":
+    case "GUAYMALLEN":
       return "🍫";
 
     case "GOMITAS":

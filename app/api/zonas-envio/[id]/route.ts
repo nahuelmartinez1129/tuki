@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { exigirAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -40,6 +41,9 @@ export async function PATCH(
   request: Request,
   context: Context
 ) {
+  const noAutorizado = await exigirAdmin();
+  if (noAutorizado) return noAutorizado;
+
   try {
     const { id } = await context.params;
     const body = await request.json();
@@ -196,6 +200,9 @@ export async function DELETE(
   request: Request,
   context: Context
 ) {
+  const noAutorizado = await exigirAdmin();
+  if (noAutorizado) return noAutorizado;
+
   try {
     const { id } = await context.params;
 

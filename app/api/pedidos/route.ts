@@ -1,6 +1,20 @@
 import { prisma } from "@/lib/prisma";
+import { exigirAdmin } from "@/lib/auth";
+import { limitar } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 import { sendTelegramMessage } from "@/lib/telegram";
+import {
+  calcularBeneficios,
+  esCajaMisteriosa,
+} from "@/lib/promociones";
+import {
+  buscarHappyHourActivo,
+  buscarPedidosEnUbicacion,
+  buscarPremioVigente,
+  esPrimeraCompra,
+  ruletaUsadaEnDireccion,
+  validarCupon,
+} from "@/lib/promociones-server";
 
 type Punto = {
   lat: number;
@@ -138,6 +152,9 @@ function validarPunto(
  * ==========================================
  */
 export async function GET() {
+  const noAutorizado = await exigirAdmin();
+  if (noAutorizado) return noAutorizado;
+
   const pedidos =
     await prisma.pedido.findMany({
       include: {
@@ -161,6 +178,18 @@ export async function GET() {
 export async function POST(
   request: Request
 ) {
+  /*
+   * Máximo 10 pedidos cada 10 minutos por IP
+   * (frena scripts que llenen de pedidos falsos).
+   */
+  const bloqueado = limitar(
+    request,
+    "crear-pedido",
+    10,
+    10 * 60
+  );
+  if (bloqueado) return bloqueado;
+
   try {
     const body =
       await request.json();
@@ -409,73 +438,94 @@ export async function POST(
 
     /*
      * ==========================================
-     * 7. BUSCAR PREMIO REAL
+     * 7. BENEFICIOS DISPONIBLES
      * ==========================================
+     *
+     * Premio de la ruleta vigente, Happy Hour
+     * dentro de sus fechas, bono de bienvenida
+     * y cupón. Se aplica UNO solo (ver
+     * lib/promociones.ts).
      */
-
-    let reward = null;
-
-    if (usuario) {
-      reward =
-        await prisma.ruleta.findFirst({
-          where: {
-            usuarioId:
-              usuario.id,
-
-            utilizado: false,
-          },
-
-          orderBy: {
-            createdAt:
-              "desc",
-          },
-        });
-
-      /*
-       * Verificar vigencia.
-       */
-
-      if (reward) {
-        const now =
-          new Date();
-
-        const nextReset =
-          new Date(
-            reward.createdAt
-          );
-
-        nextReset.setDate(
-          nextReset.getDate() +
-            1
-        );
-
-        nextReset.setHours(
-          21,
-          0,
-          0,
-          0
-        );
-
-        if (
-          now >= nextReset
-        ) {
-          reward = null;
-        }
-      }
-    }
 
     /*
-     * ==========================================
-     * 8. HAPPY HOUR REAL
-     * ==========================================
+     * La ubicación de entrega se usa para que
+     * el bono de bienvenida y los cupones no
+     * se repitan cambiando de teléfono.
      */
 
-    const happyHour =
-      await prisma.happyHour.findFirst({
-        where: {
-          activo: true,
-        },
-      });
+    const ubicacion = {
+      ...puntoEntrega,
+      direccion:
+        typeof body.direccion === "string"
+          ? body.direccion
+          : null,
+    };
+
+    const [
+      reward,
+      happyHour,
+      primeraCompra,
+      pedidosEnUbicacion,
+    ] = await Promise.all([
+      usuario
+        ? buscarPremioVigente(usuario.id)
+        : null,
+      buscarHappyHourActivo(),
+      esPrimeraCompra(
+        body.telefono,
+        ubicacion
+      ),
+      buscarPedidosEnUbicacion(ubicacion),
+    ]);
+
+    /*
+     * Otros teléfonos que ya pidieron en esta
+     * dirección (para avisar por Telegram).
+     */
+
+    const otrosTelefonos = new Set(
+      pedidosEnUbicacion
+        .map((p) => p.telefono)
+        .filter(
+          (telefono) =>
+            telefono !== body.telefono
+        )
+    );
+
+    // Un premio de ruleta por dirección cada 24 h
+    const premioRuleta =
+      ruletaUsadaEnDireccion(
+        pedidosEnUbicacion,
+        body.telefono
+      )
+        ? null
+        : reward;
+
+    let cupon: Awaited<
+      ReturnType<typeof validarCupon>
+    > | null = null;
+
+    if (
+      typeof body.cupon === "string" &&
+      body.cupon.trim()
+    ) {
+      cupon = await validarCupon(
+        body.cupon,
+        usuario?.id ?? null,
+        ubicacion
+      );
+
+      if (!cupon.ok) {
+        return NextResponse.json(
+          {
+            error: cupon.error,
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+    }
 
     /*
      * ==========================================
@@ -484,6 +534,7 @@ export async function POST(
      */
 
     let subtotal = 0;
+    let subtotalCajas = 0;
 
     const itemsParaCrear: {
       nombre: string;
@@ -567,6 +618,12 @@ export async function POST(
         producto.price *
         item.cantidad;
 
+      if (esCajaMisteriosa(producto)) {
+        subtotalCajas +=
+          producto.price *
+          item.cantidad;
+      }
+
       itemsParaCrear.push({
         nombre:
           producto.name,
@@ -622,167 +679,85 @@ export async function POST(
      * de la zona encontrada.
      */
 
-    let envio =
-      zonaEncontrada.precio;
-
     /*
      * ==========================================
-     * 12. DESCUENTOS
+     * 12. BENEFICIO (UNO SOLO POR PEDIDO)
      * ==========================================
      */
 
-    let descuento = 0;
+    const beneficios =
+      calcularBeneficios({
+        subtotal,
+        envio:
+          zonaEncontrada.precio,
+        subtotalCajas,
+        primeraCompra,
+        premio: premioRuleta,
+        happyHour,
+        cupon:
+          cupon?.ok
+            ? cupon.cupon
+            : null,
+      });
 
-    const caja =
-      itemsParaCrear.find(
-        (item) =>
-          item.nombre
-            .toLowerCase()
-            .includes("caja")
+    const beneficio =
+      beneficios.elegido;
+
+    /*
+     * Si cargó un cupón pero no llega
+     * al mínimo, se lo avisamos.
+     */
+
+    const candidatoCupon =
+      beneficios.candidatos.find(
+        (c) =>
+          c.origen === "CUPON"
       );
 
-    /*
-     * ==========================================
-     * HAPPY HOUR
-     * ==========================================
-     */
-
-    if (happyHour) {
-      if (
-        happyHour.tipo ===
-        "ENVIO_GRATIS"
-      ) {
-        envio = 0;
-      }
-
-      if (
-        happyHour.tipo ===
-        "DESCUENTO"
-      ) {
-        descuento +=
-          subtotal *
-          ((happyHour.valor ??
-            0) /
-            100);
-      }
-
-      if (
-        happyHour.tipo ===
-          "CAJA_10" &&
-        caja
-      ) {
-        descuento +=
-          caja.precio *
-          caja.cantidad *
-          ((
-            happyHour.valor ??
-            10
-          ) /
-            100);
-      }
-
-      /*
-       * Guaymallén:
-       * beneficio gratuito.
-       */
-
-      if (
-        happyHour.tipo ===
-        "GUAYMALLEN"
-      ) {
-        // No modifica el total.
-      }
-
-      /*
-       * Gomitas:
-       * beneficio gratuito.
-       */
-
-      if (
-        happyHour.tipo ===
-        "GOMITAS"
-      ) {
-        // No modifica el total.
-      }
-    }
-
-    /*
-     * ==========================================
-     * PREMIO RULETA
-     * ==========================================
-     */
-
     if (
-      reward &&
-      reward.premio !==
-        "SIN_PREMIO"
+      candidatoCupon &&
+      !candidatoCupon.aplica
     ) {
-      if (
-        reward.premio ===
-        "ENVIO_GRATIS"
-      ) {
-        envio = 0;
-      }
-
-      if (
-        reward.premio ===
-        "DESCUENTO"
-      ) {
-        descuento +=
-          subtotal * 0.1;
-      }
-
-      if (
-        reward.premio ===
-          "CAJA_10" &&
-        caja
-      ) {
-        descuento +=
-          caja.precio *
-          caja.cantidad *
-          0.1;
-      }
-
-      /*
-       * Guaymallén
-       */
-
-      if (
-        reward.premio ===
-        "GUAYMALLEN"
-      ) {
-        // Beneficio gratuito.
-      }
-
-      /*
-       * Gomitas
-       */
-
-      if (
-        reward.premio ===
-        "GOMITAS"
-      ) {
-        // Beneficio gratuito.
-      }
+      return NextResponse.json(
+        {
+          error: `Cupón: ${candidatoCupon.motivo}`,
+        },
+        {
+          status: 400,
+        }
+      );
     }
 
+    const descuento =
+      beneficios.descuento;
+
+    const envio =
+      beneficios.envio;
+
     /*
-     * ==========================================
-     * 13. SEGURIDAD DESCUENTO
-     * ==========================================
+     * Texto que queda guardado en el pedido
+     * y se ve en el admin y en Telegram.
      */
 
-    if (
-      descuento >
-      subtotal
-    ) {
-      descuento =
-        subtotal;
-    }
+    const textoBeneficio =
+      beneficio
+        ? [
+            beneficio.titulo,
+            beneficio.descuento > 0
+              ? `-$${beneficio.descuento}`
+              : null,
+            beneficio.envioGratis
+              ? "envío gratis"
+              : null,
+            beneficio.regalo,
+          ]
+            .filter(Boolean)
+            .join(" · ")
+        : null;
 
     /*
      * ==========================================
-     * 14. TOTAL REAL
+     * 13. TOTAL REAL
      * ==========================================
      */
 
@@ -807,12 +782,8 @@ export async function POST(
       descuento,
       envio,
       total,
-      premio:
-        reward?.premio ??
-        null,
-      happyHour:
-        happyHour?.tipo ??
-        null,
+      beneficio:
+        textoBeneficio,
     });
 
     /*
@@ -968,6 +939,12 @@ export async function POST(
           direccion:
             body.direccion,
 
+          latitud:
+            puntoEntrega.lat,
+
+          longitud:
+            puntoEntrega.lng,
+
           metodoPago,
 
           montoEfectivo,
@@ -983,12 +960,16 @@ export async function POST(
           total,
 
           premio:
-            reward?.premio ??
-            null,
+            beneficio?.origen ===
+            "HAPPY_HOUR"
+              ? null
+              : textoBeneficio,
 
           happyHour:
-            happyHour?.titulo ??
-            null,
+            beneficio?.origen ===
+            "HAPPY_HOUR"
+              ? textoBeneficio
+              : null,
 
           observaciones:
             body.observaciones,
@@ -1006,11 +987,18 @@ export async function POST(
 
     /*
      * ==========================================
-     * 18. MARCAR PREMIO UTILIZADO
+     * 18. MARCAR BENEFICIO UTILIZADO
      * ==========================================
+     *
+     * Solo se consume el beneficio que se
+     * aplicó. Un premio de la ruleta que no se
+     * usó sigue disponible hasta que venza.
      */
 
-    if (reward) {
+    if (
+      beneficio?.origen === "RULETA" &&
+      reward
+    ) {
       await prisma.ruleta.update({
         where: {
           id: reward.id,
@@ -1020,6 +1008,31 @@ export async function POST(
           utilizado: true,
         },
       });
+    }
+
+    if (
+      beneficio?.origen === "CUPON" &&
+      cupon?.ok &&
+      usuario
+    ) {
+      await prisma.$transaction([
+        prisma.cuponUso.create({
+          data: {
+            cuponId: cupon.cupon.id,
+            usuarioId: usuario.id,
+          },
+        }),
+        prisma.cupon.update({
+          where: {
+            id: cupon.cupon.id,
+          },
+          data: {
+            usosActuales: {
+              increment: 1,
+            },
+          },
+        }),
+      ]);
     }
 
     /*
@@ -1071,7 +1084,15 @@ export async function POST(
 🗺️ <b>Zona:</b> ${
         zonaEncontrada.nombre
       }
-
+${
+  otrosTelefonos.size > 0
+    ? `\n⚠️ <b>Esta dirección ya tiene pedidos con ${otrosTelefonos.size} ${
+        otrosTelefonos.size === 1
+          ? "otro teléfono"
+          : "otros teléfonos"
+      }.</b> Revisá si corresponde el beneficio.\n`
+    : ""
+}
 💳 <b>Método de pago:</b>
 ${informacionPago}
 

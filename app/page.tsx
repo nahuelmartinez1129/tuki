@@ -17,6 +17,7 @@ import { HappyHourModal }
 from "@/components/home/happy-hour-modal";
 import { OrderTracker }
 from "@/components/home/order-tracker";
+import { BonoBienvenidaBanner } from "@/components/promo/bono-bienvenida";
 export const dynamic = "force-dynamic";
 
 export const revalidate = 0;
@@ -33,6 +34,7 @@ export default function Home() {
       <main>
         <Hero />
         <PromoBanner />
+        <BonoBienvenidaBanner className="container mt-6" />
         <FeaturedProducts />
         <Combos />
         <RouletteSection /> 

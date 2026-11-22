@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { exigirAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -31,6 +32,9 @@ function validarPoligono(poligono: unknown): boolean {
 }
 
 export async function GET() {
+  const noAutorizado = await exigirAdmin();
+  if (noAutorizado) return noAutorizado;
+
   try {
     const zonas = await prisma.zonaEnvio.findMany({
       orderBy: [
@@ -55,6 +59,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const noAutorizado = await exigirAdmin();
+  if (noAutorizado) return noAutorizado;
+
   try {
     const body = await request.json();
 

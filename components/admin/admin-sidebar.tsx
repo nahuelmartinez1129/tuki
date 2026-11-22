@@ -40,8 +40,8 @@ const items = [
     icon: WalletCards,
   },
   {
-    href: "/admin/premios",
-    label: "Premios",
+    href: "/admin/cupones",
+    label: "Cupones",
     icon: Gift,
   },
   {

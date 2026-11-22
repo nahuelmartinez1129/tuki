@@ -28,3 +28,6 @@ next-env.d.ts
 /lib/generated/prisma
 
 tuki_produccion_backup.dump
+
+# respaldos de scripts de datos
+/backups

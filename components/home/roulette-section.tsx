@@ -50,6 +50,16 @@ export function RouletteSection() {
   const [canSpin, setCanSpin] =
     useState(true);
 
+  /*
+   * Próximo reinicio (21:00 Argentina) y
+   * segundos que faltan, según el servidor.
+   */
+  const [nextReset, setNextReset] =
+    useState<{
+      fecha: Date;
+      segundos: number;
+    } | null>(null);
+
   const [loading, setLoading] =
     useState(false);
 
@@ -125,8 +135,26 @@ export function RouletteSection() {
       const data =
         await response.json();
 
+      /*
+       * Sin sesión (por ejemplo, se registró
+       * antes de esta versión): mostramos el
+       * botón y al tocarlo le pedimos ingresar.
+       */
       setCanSpin(
-        data.canSpin === true
+        data.canSpin === true ||
+          data.needsLogin === true
+      );
+
+      setNextReset(
+        data.nextReset
+          ? {
+              fecha: new Date(
+                data.nextReset
+              ),
+              segundos:
+                data.secondsLeft ?? 0,
+            }
+          : null
       );
     } catch (error) {
       console.error(
@@ -209,6 +237,11 @@ export function RouletteSection() {
 
       const data =
         await response.json();
+
+      if (data?.needsLogin) {
+        setShowRegisterModal(true);
+        return;
+      }
 
       if (!response.ok) {
         alert(
@@ -374,9 +407,19 @@ export function RouletteSection() {
               </p>
 
               <p className="mt-1 text-sm text-tuki-cream">
-                Disponible todos los
-                días a las 21:00
+                {nextReset
+                  ? textoProximoGiro(
+                      nextReset.fecha,
+                      nextReset.segundos
+                    )
+                  : "Disponible todos los días a las 21:00"}
               </p>
+
+              {nextReset && (
+                <p className="mt-1 text-xs text-tuki-cream/50">
+                  Se reinicia todos los días a las 21:00
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -431,4 +474,41 @@ export function RouletteSection() {
       />
     </section>
   );
+}
+/*
+ * "hoy a las 21:00 (en 2 h 15 min)" o
+ * "mañana a las 21:00 (en 23 h 40 min)".
+ *
+ * "Hoy" y "mañana" se calculan en hora de
+ * Argentina, no del celular del cliente.
+ */
+function textoProximoGiro(
+  fecha: Date,
+  segundos: number
+) {
+  const diaArgentina = (d: Date) =>
+    d.toLocaleDateString("es-AR", {
+      timeZone:
+        "America/Argentina/Buenos_Aires",
+    });
+
+  const esHoy =
+    diaArgentina(fecha) ===
+    diaArgentina(new Date());
+
+  const totalMinutos = Math.max(
+    1,
+    Math.ceil(segundos / 60)
+  );
+  const horas = Math.floor(totalMinutos / 60);
+  const minutos = totalMinutos % 60;
+
+  const falta =
+    horas > 0
+      ? `${horas} h ${minutos} min`
+      : `${minutos} min`;
+
+  return `Vuelve ${
+    esHoy ? "hoy" : "mañana"
+  } a las 21:00 (en ${falta})`;
 }

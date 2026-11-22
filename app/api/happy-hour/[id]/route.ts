@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { exigirAdmin } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 // ======================================================
@@ -12,6 +13,9 @@ export async function PATCH(
     params: Promise<{ id: string }>;
   }
 ) {
+  const noAutorizado = await exigirAdmin();
+  if (noAutorizado) return noAutorizado;
+
   try {
     const { id } = await context.params;
 
@@ -135,12 +139,12 @@ export async function PATCH(
       if (
         Number.isNaN(numero) ||
         numero <= 0 ||
-        numero > 100
+        numero > 10
       ) {
         return NextResponse.json(
           {
             error:
-              "El porcentaje debe estar entre 1 y 100.",
+              "El porcentaje debe estar entre 1 y 10.",
           },
           {
             status: 400,
@@ -268,6 +272,9 @@ export async function DELETE(
     params: Promise<{ id: string }>;
   }
 ) {
+  const noAutorizado = await exigirAdmin();
+  if (noAutorizado) return noAutorizado;
+
   try {
     const { id } = await context.params;
 

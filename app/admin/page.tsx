@@ -20,9 +20,6 @@ export default function AdminPage() {
   const [abierto, setAbierto] =
     useState<boolean | null>(null);
 
-  const [envio, setEnvio] =
-    useState(900);
-
   const [stats, setStats] =
     useState<{
       pedidosHoy: number;
@@ -77,10 +74,6 @@ export default function AdminPage() {
 
       setAbierto(
         data.abierto
-      );
-
-      setEnvio(
-        data.envio ?? 900
       );
     }
 
@@ -339,68 +332,22 @@ export default function AdminPage() {
           </span>
         </p>
 
+        {/*
+          El envío se cobra según la zona
+          (Admin → Zonas de envío).
+        */}
         <div className="mt-8">
-          <label className="mb-2 block text-sm text-tuki-cream/70">
-            Precio del envío
-          </label>
+          <p className="text-sm text-tuki-cream/70">
+            El precio del envío y la compra mínima se configuran
+            por zona.
+          </p>
 
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={envio}
-              onChange={(e) =>
-                setEnvio(
-                  Number(
-                    e.target.value
-                  )
-                )
-              }
-              className="
-                w-36
-                rounded-xl
-                border
-                border-white/10
-                bg-white/5
-                px-3
-                py-2
-                text-tuki-cream
-              "
-            />
-
-            <button
-              onClick={async () => {
-                await fetch(
-                  "/api/configuracion/update",
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type":
-                        "application/json",
-                    },
-                    body:
-                      JSON.stringify({
-                        abierto,
-                        envio,
-                      }),
-                  }
-                );
-
-                alert(
-                  "Envío actualizado"
-                );
-              }}
-              className="
-                rounded-xl
-                bg-tuki-lime
-                px-4
-                py-2
-                font-bold
-                text-black
-              "
-            >
-              Guardar
-            </button>
-          </div>
+          <a
+            href="/admin/zonas-envio"
+            className="mt-3 inline-block rounded-xl bg-tuki-lime px-4 py-2 font-bold text-black"
+          >
+            Ir a Zonas de envío
+          </a>
         </div>
       </div>
 

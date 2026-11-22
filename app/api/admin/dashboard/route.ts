@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { exigirAdmin } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 function getFechaArgentina(date: Date) {
@@ -36,6 +37,9 @@ function getInicioDiaArgentina() {
 }
 
 export async function GET() {
+  const noAutorizado = await exigirAdmin();
+  if (noAutorizado) return noAutorizado;
+
   try {
     /*
      * =====================================================

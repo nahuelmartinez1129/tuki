@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { exigirAdmin } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -74,6 +75,9 @@ export async function GET() {
 // ======================================================
 
 export async function POST(request: Request) {
+  const noAutorizado = await exigirAdmin();
+  if (noAutorizado) return noAutorizado;
+
   try {
     const body = await request.json();
 
@@ -173,12 +177,12 @@ export async function POST(request: Request) {
       if (
         Number.isNaN(numero) ||
         numero <= 0 ||
-        numero > 100
+        numero > 10
       ) {
         return NextResponse.json(
           {
             error:
-              "El porcentaje debe estar entre 1 y 100.",
+              "El porcentaje debe estar entre 1 y 10.",
           },
           {
             status: 400,

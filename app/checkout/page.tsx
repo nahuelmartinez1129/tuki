@@ -18,6 +18,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/hooks/use-cart";
+import {
+  calcularBeneficios,
+  esCajaMisteriosa,
+  type CuponValido,
+  type PremioRuleta,
+} from "@/lib/promociones";
 import type {
   CheckoutOrder,
   PaymentMethod,
@@ -73,10 +79,36 @@ export default function CheckoutPage() {
    */
 
   const [reward, setReward] =
-    useState<{
-      premio?: string;
-      id?: string;
-    } | null>(null);
+    useState<PremioRuleta | null>(
+      null
+    );
+
+  /*
+   * ==========================================
+   * BONO DE BIENVENIDA Y CUPÓN
+   * ==========================================
+   */
+
+  const [
+    primeraCompra,
+    setPrimeraCompra,
+  ] = useState(false);
+
+  const [cuponInput, setCuponInput] =
+    useState("");
+
+  const [
+    cuponCodigo,
+    setCuponCodigo,
+  ] = useState("");
+
+  const [cupon, setCupon] =
+    useState<CuponValido | null>(
+      null
+    );
+
+  const [cuponError, setCuponError] =
+    useState("");
 
   /*
    * ==========================================
@@ -100,9 +132,6 @@ export default function CheckoutPage() {
 
   const [abierto, setAbierto] =
     useState(true);
-
-  const [envioBase, setEnvioBase] =
-    useState(800);
 
   const router = useRouter();
 
@@ -258,120 +287,61 @@ export default function CheckoutPage() {
    * ==========================================
    */
 
-  let delivery =
-    zonaEnvio?.precio ??
-    envioBase;
-
-  let discount = 0;
-  let regalo = "";
-
-  const caja = items.find(
-    (item) =>
-      item.name
-        .toLowerCase()
-        .includes("caja")
-  );
+  /*
+   * El envío depende de la zona. Hasta que el
+   * cliente verifica la dirección no lo sabemos,
+   * así que no se suma al total.
+   */
+  const envioZona =
+    zonaEnvio?.precio ?? 0;
 
   /*
    * ==========================================
-   * HAPPY HOUR
+   * BENEFICIO (UNO SOLO POR PEDIDO)
    * ==========================================
+   *
+   * Mismo cálculo que hace /api/pedidos
+   * (lib/promociones.ts).
    */
 
-  if (happyHour) {
-    if (
-      happyHour.tipo ===
-      "ENVIO_GRATIS"
-    ) {
-      delivery = 0;
-    }
+  const beneficios =
+    calcularBeneficios({
+      subtotal,
+      envio: envioZona,
+      subtotalCajas: items
+        .filter((item) =>
+          esCajaMisteriosa(item)
+        )
+        .reduce(
+          (total, item) =>
+            total +
+            item.price *
+              item.quantity,
+          0
+        ),
+      primeraCompra,
+      premio: reward,
+      happyHour,
+      cupon,
+    });
 
-    if (
-      happyHour.tipo ===
-      "DESCUENTO"
-    ) {
-      discount +=
-        subtotal *
-        (happyHour.valor / 100);
-    }
+  const beneficio =
+    beneficios.elegido;
 
-    if (
-      happyHour.tipo ===
-      "GUAYMALLEN"
-    ) {
-      regalo +=
-        "🍫 ¡Alfajor Guaymallén gratis! en tu próxima compra ";
-    }
+  const delivery =
+    beneficios.envio;
 
-    if (
-      happyHour.tipo ===
-      "GOMITAS"
-    ) {
-      regalo +=
-        "🍬 Caramelos Gratis (Happy Hour) ";
-    }
-
-    if (
-      happyHour.tipo ===
-        "CAJA_10" &&
-      caja
-    ) {
-      discount +=
-        caja.price * 0.1;
-    }
-  }
+  const discount =
+    beneficios.descuento;
 
   /*
-   * ==========================================
-   * RULETA
-   * ==========================================
+   * Beneficios disponibles que todavía
+   * no llegan a su compra mínima.
    */
-
-  if (
-    reward?.premio &&
-    reward.premio !==
-      "SIN_PREMIO"
-  ) {
-    if (
-      reward.premio ===
-      "ENVIO_GRATIS"
-    ) {
-      delivery = 0;
-    }
-
-    if (
-      reward.premio ===
-      "DESCUENTO"
-    ) {
-      discount +=
-        subtotal * 0.1;
-    }
-
-    if (
-      reward.premio ===
-      "GUAYMALLEN"
-    ) {
-      regalo +=
-        "🍫 ¡Alfajor Guaymallén gratis! en tu próxima compra ";
-    }
-
-    if (
-      reward.premio ===
-      "GOMITAS"
-    ) {
-      regalo +=
-        "🍬 Caramelos Gratis ";
-    }
-
-    if (
-      reward.premio ===
-        "CAJA_10" &&
-      caja
-    ) {
-      discount +=
-        caja.price * 0.1;
-    }
-  }
+  const beneficiosPendientes =
+    beneficios.candidatos.filter(
+      (c) => !c.aplica
+    );
 
   /*
    * ==========================================
@@ -455,15 +425,49 @@ export default function CheckoutPage() {
    */
 
   useEffect(() => {
-    async function loadReward() {
+    async function loadBeneficios() {
       if (!phone) return;
 
       try {
+        const params =
+          new URLSearchParams({
+            phone,
+          });
+
+        if (cuponCodigo) {
+          params.set(
+            "cupon",
+            cuponCodigo
+          );
+        }
+
+        /*
+         * Con la dirección verificada se
+         * controla también la ubicación
+         * (bono y cupones por dirección).
+         */
+        if (coordenadasEntrega) {
+          params.set(
+            "lat",
+            String(
+              coordenadasEntrega.lat
+            )
+          );
+          params.set(
+            "lng",
+            String(
+              coordenadasEntrega.lng
+            )
+          );
+          params.set(
+            "direccion",
+            `${calle.trim()} ${numero.trim()}`.trim()
+          );
+        }
+
         const response =
           await fetch(
-            `/api/rewards?phone=${encodeURIComponent(
-              phone
-            )}`,
+            `/api/beneficios?${params.toString()}`,
             {
               cache: "no-store",
             }
@@ -476,17 +480,27 @@ export default function CheckoutPage() {
         const data =
           await response.json();
 
-        setReward(data);
+        setReward(data.premio);
+        setPrimeraCompra(
+          data.primeraCompra
+        );
+        setCupon(data.cupon);
+        setCuponError(
+          data.cuponError ?? ""
+        );
       } catch (error) {
         console.error(
-          "Error cargando premio:",
+          "Error cargando beneficios:",
           error
         );
       }
     }
 
-    loadReward();
-  }, [phone]);
+    loadBeneficios();
+    // calle y número se leen solo cuando cambian
+    // las coordenadas (dirección verificada).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phone, cuponCodigo, coordenadasEntrega]);
 
   /*
    * ==========================================
@@ -516,9 +530,6 @@ export default function CheckoutPage() {
           data.abierto
         );
 
-        setEnvioBase(
-          data.envio ?? 800
-        );
       } catch (error) {
         console.error(
           "Error cargando configuración:",
@@ -960,7 +971,7 @@ export default function CheckoutPage() {
       subtotal,
       total,
       reward:
-        reward?.premio,
+        beneficio?.titulo,
     };
 
     /*
@@ -1026,6 +1037,11 @@ export default function CheckoutPage() {
               observaciones:
                 notes,
 
+              cupon:
+                cupon
+                  ? cupon.codigo
+                  : undefined,
+
               items: items.map(
                 (item) => ({
                   nombre:
@@ -1060,35 +1076,9 @@ export default function CheckoutPage() {
       }
 
       /*
-       * ======================================
-       * MARCAR PREMIO UTILIZADO
-       * ======================================
+       * El servidor ya marcó como usado el
+       * beneficio que se aplicó.
        */
-
-      if (
-        reward?.premio &&
-        reward.premio !==
-          "SIN_PREMIO"
-      ) {
-        if (reward.id) {
-          await fetch(
-            "/api/rewards/use",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-              body: JSON.stringify({
-                rewardId:
-                  reward.id,
-              }),
-            }
-          );
-        }
-
-        setReward(null);
-      }
 
       /*
        * ======================================
@@ -1218,9 +1208,9 @@ export default function CheckoutPage() {
               </span>
             </div>
 
-            {regalo && (
+            {beneficio?.regalo && (
               <div className="rounded-xl bg-green-500/10 p-3 text-sm text-green-400">
-                {regalo}
+                {beneficio.regalo}
               </div>
             )}
 
@@ -1819,13 +1809,16 @@ export default function CheckoutPage() {
                     Envío
                   </span>
 
-                  {delivery ===
+                  {!zonaEnvio ? (
+                    <span className="text-sm text-muted-foreground">
+                      Se calcula con tu dirección
+                    </span>
+                  ) : delivery ===
                   0 ? (
                     <div className="flex items-center gap-2">
                       <span className="line-through">
                         {formatPrice(
-                          zonaEnvio?.precio ??
-                            envioBase
+                          zonaEnvio.precio
                         )}
                       </span>
 
@@ -1842,61 +1835,123 @@ export default function CheckoutPage() {
                   )}
                 </div>
 
-                {/* PREMIOS / HAPPY HOUR */}
+                {/* BENEFICIO APLICADO */}
 
-                {(reward?.premio ||
-                  happyHour) && (
+                {beneficio && (
                   <div className="rounded-2xl border border-tuki-lime/20 bg-tuki-night p-4">
-                    {reward?.premio && (
-                      <>
-                        <p className="font-display text-xs font-bold uppercase text-tuki-lime">
-                          PREMIO DE LA RULETA
-                        </p>
+                    <p className="font-display text-xs font-bold uppercase text-tuki-lime">
+                      Beneficio aplicado
+                    </p>
 
-                        <p className="mt-2 text-sm text-tuki-cream">
-                          🎁{" "}
-                          {reward.premio ===
-                          "GOMITAS"
-                            ? "Caramelos Gratis"
-                            : reward.premio ===
-                              "GUAYMALLEN"
-                            ? "Alfajor Guaymallén gratis"
-                            : reward.premio ===
-                              "ENVIO_GRATIS"
-                            ? "Envío Gratis"
-                            : reward.premio ===
-                              "DESCUENTO"
-                            ? "10% de descuento"
-                            : reward.premio ===
-                              "CAJA_10"
-                            ? "10% OFF Caja Misteriosa"
-                            : reward.premio}
-                        </p>
-                      </>
+                    <p className="mt-2 text-sm text-tuki-cream">
+                      🎁 {beneficio.titulo}
+                    </p>
+
+                    {beneficio.regalo && (
+                      <p className="mt-1 text-sm text-tuki-cream/80">
+                        {beneficio.regalo}
+                      </p>
                     )}
 
-                    {happyHour && (
-                      <>
-                        <p className="mt-4 font-display text-xs font-bold uppercase text-tuki-lime">
-                          HAPPY HOUR
-                        </p>
-
-                        <p className="mt-2 text-sm text-tuki-cream">
-                          🔥{" "}
-                          {
-                            happyHour.titulo
-                          }
-                        </p>
-                      </>
-                    )}
+                    <p className="mt-2 text-xs text-tuki-cream/50">
+                      Las promociones no se combinan: se aplica la que más te conviene.
+                    </p>
                   </div>
                 )}
+
+                {/* BENEFICIOS QUE TODAVÍA NO APLICAN */}
+
+                {beneficiosPendientes.map(
+                  (pendiente) => (
+                    <div
+                      key={pendiente.origen}
+                      className="rounded-2xl border border-white/10 bg-tuki-night p-3 text-sm text-tuki-cream/80"
+                    >
+                      ✨ {pendiente.titulo}:{" "}
+                      {pendiente.motivo}
+                    </div>
+                  )
+                )}
+
+                {/* CUPÓN */}
+
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={cuponInput}
+                      onChange={(e) =>
+                        setCuponInput(
+                          e.target.value.toUpperCase()
+                        )
+                      }
+                      placeholder="¿Tenés un cupón?"
+                      className="flex-1"
+                    />
+
+                    {cuponCodigo ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setCuponCodigo("");
+                          setCuponInput("");
+                          setCupon(null);
+                          setCuponError("");
+                        }}
+                      >
+                        Quitar
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={
+                          !cuponInput.trim()
+                        }
+                        onClick={() => {
+                          if (!phone) {
+                            setCuponError(
+                              "Completá tu teléfono para usar un cupón."
+                            );
+                            return;
+                          }
+
+                          setCuponCodigo(
+                            cuponInput.trim()
+                          );
+                        }}
+                      >
+                        Aplicar
+                      </Button>
+                    )}
+                  </div>
+
+                  {cuponError && (
+                    <p className="text-sm text-red-400">
+                      {cuponError}
+                    </p>
+                  )}
+
+                  {cupon &&
+                    beneficio &&
+                    beneficio.origen !==
+                      "CUPON" && (
+                      <p className="text-sm text-tuki-cream/70">
+                        Tu cupón no se aplicó porque{" "}
+                        {beneficio.titulo.toLowerCase()} te
+                        conviene más. Lo podés usar en otro
+                        pedido.
+                      </p>
+                    )}
+                </div>
 
                 {/* TOTAL */}
 
                 <div className="flex items-center justify-between pt-2">
                   <span className="font-display text-lg font-bold text-card-foreground">
-                    Total
+                    {zonaEnvio
+                      ? "Total"
+                      : "Total sin envío"}
                   </span>
 
                   <span className="font-display text-xl font-extrabold text-tuki-lime">

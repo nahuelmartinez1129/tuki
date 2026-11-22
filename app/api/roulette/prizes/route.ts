@@ -9,7 +9,6 @@ export async function GET() {
         tipo: {
           notIn: [
             "CAJA_10",
-            "GUAYMALLEN",
           ],
         },
       },

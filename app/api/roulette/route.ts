@@ -1,73 +1,37 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import {
+  RULETA_MODO_PRUEBA,
+  estadoRuleta,
+} from "@/lib/ruleta";
+import { sesionCliente } from "@/lib/auth";
 
-const ROULETTE_TEST_MODE =
-  process.env.ROULETTE_TEST_MODE === "false";
+export const dynamic = "force-dynamic";
 
-const ARGENTINA_OFFSET_MS =
-  3 * 60 * 60 * 1000;
+/*
+ * ======================================================
+ * GET
+ * ¿El usuario puede girar la ruleta?
+ *
+ * Se reinicia todos los días a las 21:00 de
+ * Argentina (ver lib/ruleta.ts).
+ * ======================================================
+ */
+export async function GET() {
+  /*
+   * El teléfono sale de la sesión firmada
+   * (se crea al registrarse), no de la URL.
+   */
+  const sesion = await sesionCliente();
 
-function getArgentinaParts(date: Date) {
-  const argentinaTime =
-    new Date(
-      date.getTime() -
-        ARGENTINA_OFFSET_MS
-    );
-
-  return {
-    year: argentinaTime.getUTCFullYear(),
-    month: argentinaTime.getUTCMonth(),
-    day: argentinaTime.getUTCDate(),
-    hour: argentinaTime.getUTCHours(),
-  };
-}
-
-function getNextRouletteReset(
-  lastSpin: Date
-) {
-  const {
-    year,
-    month,
-    day,
-  } = getArgentinaParts(
-    lastSpin
-  );
-
-  // 21:00 Argentina = 00:00 UTC del día siguiente.
-  // La ruleta vuelve a habilitarse a las 21:00
-  // del día siguiente al último giro.
-  return new Date(
-    Date.UTC(
-      year,
-      month,
-      day + 2,
-      0,
-      0,
-      0,
-      0
-    )
-  );
-}
-
-export async function GET(
-  request: Request
-) {
-  const { searchParams } =
-    new URL(request.url);
-
-  const phone =
-    searchParams.get("phone");
-
-  if (!phone) {
-    return NextResponse.json(
-      {
-        error: "phone requerido",
-      },
-      {
-        status: 400,
-      }
-    );
+  if (!sesion) {
+    return NextResponse.json({
+      canSpin: false,
+      needsLogin: true,
+    });
   }
+
+  const phone = sesion.phone;
 
   const user =
     await prisma.usuario.findUnique({
@@ -83,10 +47,10 @@ export async function GET(
   }
 
   // ======================================================
-  // MODO PRUEBA
+  // MODO PRUEBA (ROULETTE_TEST_MODE=true)
   // ======================================================
 
-  if (ROULETTE_TEST_MODE) {
+  if (RULETA_MODO_PRUEBA) {
     return NextResponse.json({
       canSpin: true,
       testMode: true,
@@ -94,7 +58,7 @@ export async function GET(
   }
 
   // ======================================================
-  // BUSCAR ÚLTIMO GIRO
+  // ÚLTIMO GIRO
   // ======================================================
 
   const lastSpin =
@@ -108,28 +72,10 @@ export async function GET(
       },
     });
 
-  if (!lastSpin) {
-    return NextResponse.json({
-      canSpin: true,
-    });
-  }
+  const estado =
+    estadoRuleta(lastSpin);
 
-  // ======================================================
-  // VERIFICAR COOLDOWN
-  // ======================================================
-
-  const now =
-    new Date();
-
-  const nextReset =
-    getNextRouletteReset(
-      lastSpin.createdAt
-    );
-
-  if (
-    now.getTime() >=
-    nextReset.getTime()
-  ) {
+  if (estado.puedeGirar) {
     return NextResponse.json({
       canSpin: true,
     });
@@ -139,20 +85,12 @@ export async function GET(
     canSpin: false,
 
     prize:
-      lastSpin.premio,
+      lastSpin?.premio,
 
     secondsLeft:
-      Math.max(
-        0,
-        Math.floor(
-          (
-            nextReset.getTime() -
-            now.getTime()
-          ) / 1000
-        )
-      ),
+      estado.segundosRestantes,
 
     nextReset:
-      nextReset.toISOString(),
+      estado.proximoReinicio?.toISOString(),
   });
 }

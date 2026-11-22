@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
+import { formatPrice } from "@/lib/format";
+import { REGLAS } from "@/lib/promociones";
 
 type HappyHour = {
   id: string;
   titulo: string;
   tipo: string;
+  valor?: number | null;
 };
 
 export function HappyHourModal() {
@@ -49,24 +52,34 @@ export function HappyHourModal() {
     return null;
   }
 
+  /*
+   * Los mínimos salen de lib/promociones.ts,
+   * así el cartel siempre coincide con lo
+   * que se cobra en el checkout.
+   */
+  const porcentaje = Math.min(
+    happyHour.valor ?? 10,
+    REGLAS.happyHourDescuentoMaxPorcentaje
+  );
+
   const messages: Record<
   string,
   string
 > = {
   ENVIO_GRATIS:
-    "🚚 ¡Envío gratis en todos los pedidos!",
+    `🚚 ¡Envío gratis en pedidos desde ${formatPrice(REGLAS.happyHourEnvioGratisMinimo)}!`,
 
   DESCUENTO:
-    "💸 ¡10% de descuento en tu pedido!",
+    `💸 ¡${porcentaje}% de descuento en pedidos desde ${formatPrice(REGLAS.happyHourDescuentoMinimo)}!`,
 
-  SMACK_CUBANITO:
-    "🥜 ¡Te regalamos un Smack Cubanito con tu compra!",
+  GUAYMALLEN:
+    `🍫 ¡Alfajor Guaymallén de regalo en pedidos desde ${formatPrice(REGLAS.happyHourRegaloMinimo)}!`,
 
   GOMITAS:
-    "🍬 ¡Caramelos gratis esta noche!",
+    `🍬 ¡5 moritas de regalo en pedidos desde ${formatPrice(REGLAS.happyHourRegaloMinimo)}!`,
 
   CAJA_10:
-    "📦 ¡10% OFF en Cajas Misteriosas!",
+    `📦 ¡${porcentaje}% OFF en Cajas Misteriosas!`,
 };
 
   return (

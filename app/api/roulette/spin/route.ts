@@ -1,47 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-
-const ROULETTE_TEST_MODE =
-  process.env.ROULETTE_TEST_MODE === "false";
-
-const ARGENTINA_OFFSET_MS =
-  3 * 60 * 60 * 1000;
-
-function getArgentinaParts(date: Date) {
-  const argentinaTime = new Date(
-    date.getTime() - ARGENTINA_OFFSET_MS
-  );
-
-  return {
-    year: argentinaTime.getUTCFullYear(),
-    month: argentinaTime.getUTCMonth(),
-    day: argentinaTime.getUTCDate(),
-  };
-}
-
-function getNextRouletteReset(lastSpin: Date) {
-  const {
-    year,
-    month,
-    day,
-  } = getArgentinaParts(lastSpin);
-
-  // 21:00 Argentina = 00:00 UTC del día siguiente.
-  //
-  // La ruleta vuelve a habilitarse
-  // a las 21:00 del día siguiente al último giro.
-  return new Date(
-    Date.UTC(
-      year,
-      month,
-      day + 2,
-      0,
-      0,
-      0,
-      0
-    )
-  );
-}
+import {
+  RULETA_MODO_PRUEBA,
+  estadoRuleta,
+} from "@/lib/ruleta";
+import { sesionCliente } from "@/lib/auth";
+import { limitar } from "@/lib/rate-limit";
 
 // ======================================================
 // SELECCIÓN DEL PREMIO SEGÚN PROBABILIDAD
@@ -96,22 +60,48 @@ export async function POST(
   request: Request
 ) {
   try {
-    const { phone } =
-      await request.json();
-
     // --------------------------------------------------
-    // VALIDAR TELÉFONO
+    // SESIÓN
+    //
+    // Quién gira sale SOLO de la cookie firmada
+    // del registro. Mandar otro teléfono en el
+    // cuerpo no sirve de nada.
     // --------------------------------------------------
 
-    if (!phone) {
+    const sesion = await sesionCliente();
+
+    if (!sesion) {
       return NextResponse.json(
         {
-          error: "phone requerido",
+          error:
+            "Ingresá con tu celular para girar.",
+          needsLogin: true,
         },
         {
-          status: 400,
+          status: 401,
         }
       );
+    }
+
+    const phone = sesion.phone;
+
+    // --------------------------------------------------
+    // LÍMITE POR IP
+    //
+    // Aunque registre varios números (modo
+    // incógnito), desde una misma conexión se
+    // puede girar como mucho 6 veces cada 24 h
+    // (alcanza para una familia + "Volvé a girar").
+    // --------------------------------------------------
+
+    if (!RULETA_MODO_PRUEBA) {
+      const bloqueado = limitar(
+        request,
+        "ruleta-giro",
+        6,
+        24 * 60 * 60
+      );
+      if (bloqueado) return bloqueado;
     }
 
     // --------------------------------------------------
@@ -137,78 +127,17 @@ export async function POST(
     }
 
     // --------------------------------------------------
-    // BUSCAR ÚLTIMO GIRO
-    // --------------------------------------------------
-
-    const lastSpin =
-      await prisma.ruleta.findFirst({
-        where: {
-          usuarioId: user.id,
-        },
-
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-
-    // --------------------------------------------------
-    // VERIFICAR COOLDOWN
+    // PREMIOS ANTERIORES
     //
-    // Si el último premio fue VOLVER_A_GIRAR,
-    // NO se aplica cooldown porque el usuario
-    // tiene derecho a volver a girar.
+    // No se anulan: cada premio vence solo a las
+    // 48 horas (lib/promociones.ts) y en cada
+    // pedido se usa uno solo.
     // --------------------------------------------------
-
-    if (
-      lastSpin &&
-      lastSpin.premio !== "VOLVER_A_GIRAR" &&
-      !ROULETTE_TEST_MODE
-    ) {
-      const now = new Date();
-
-      const nextReset =
-        getNextRouletteReset(
-          lastSpin.createdAt
-        );
-
-      if (
-        now.getTime() <
-        nextReset.getTime()
-      ) {
-        return NextResponse.json(
-          {
-            error:
-              "La ruleta se reinicia a las 21:00. Volvé mañana.",
-
-            nextReset:
-              nextReset.toISOString(),
-          },
-          {
-            status: 403,
-          }
-        );
-      }
-    }
-
-    // --------------------------------------------------
-    // DESACTIVAR PREMIOS ANTERIORES
-    // --------------------------------------------------
-
-    await prisma.ruleta.updateMany({
-      where: {
-        usuarioId: user.id,
-        utilizado: false,
-      },
-
-      data: {
-        utilizado: true,
-      },
-    });
 
     // --------------------------------------------------
     // OBTENER PREMIOS ACTIVOS
     //
-    // CAJA_10 y GUAYMALLEN quedan excluidos.
+    // CAJA_10 queda excluido.
     // --------------------------------------------------
 
     const premios =
@@ -219,7 +148,6 @@ export async function POST(
           tipo: {
             notIn: [
               "CAJA_10",
-              "GUAYMALLEN",
             ],
           },
         },
@@ -288,20 +216,72 @@ export async function POST(
       );
 
     // --------------------------------------------------
-    // GUARDAR GIRO
+    // VERIFICAR HORARIO Y GUARDAR GIRO
+    //
+    // Se reinicia todos los días a las 21:00 de
+    // Argentina (lib/ruleta.ts).
+    //
+    // El bloqueo por usuario evita que dos
+    // pedidos simultáneos (doble toque) giren
+    // dos veces.
     // --------------------------------------------------
 
-    await prisma.ruleta.create({
-      data: {
-        usuarioId:
-          user.id,
+    const bloqueo =
+      await prisma.$transaction(
+        async (tx) => {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${user.id}))`;
 
-        premio:
-          premio.tipo,
+          const lastSpin =
+            await tx.ruleta.findFirst({
+              where: {
+                usuarioId: user.id,
+              },
 
-        utilizado: false,
-      },
-    });
+              orderBy: {
+                createdAt: "desc",
+              },
+            });
+
+          const estado =
+            estadoRuleta(lastSpin);
+
+          if (
+            !estado.puedeGirar &&
+            !RULETA_MODO_PRUEBA
+          ) {
+            return estado;
+          }
+
+          await tx.ruleta.create({
+            data: {
+              usuarioId:
+                user.id,
+
+              premio:
+                premio.tipo,
+
+              utilizado: false,
+            },
+          });
+
+          return null;
+        }
+      );
+
+    if (bloqueo) {
+      return NextResponse.json(
+        {
+          error:
+            "Ya giraste esta noche. La ruleta se reinicia todos los días a las 21:00.",
+
+          nextReset:
+            bloqueo.proximoReinicio?.toISOString(),
+        },
+        {
+          status: 403,
+        }
+      );
+    }
 
     // --------------------------------------------------
     // RESPUESTA

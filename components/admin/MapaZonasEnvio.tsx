@@ -22,8 +22,8 @@ type MapaZonasEnvioProps = {
 };
 
 const POSICION_TUKI: [number, number] = [
-  -38.2630868,
-  -57.8463145,
+  -38.2684915,
+  -57.8526209,
 ];
 
 function CrearPuntos({
@@ -90,7 +90,7 @@ export default function MapaZonasEnvio({
       <div className="overflow-hidden rounded-2xl border border-white/10">
         <MapContainer
           center={POSICION_TUKI}
-          zoom={19}
+          zoom={14}
           scrollWheelZoom={true}
           className="h-[500px] w-full"
         >

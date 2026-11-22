@@ -333,10 +333,11 @@ async function zonas() {
 
   for (const zona of lista) {
     const precio = PRECIO_ZONA[zona.nombre] ?? zona.precio;
-    const esA = zona.nombre === "Zona A";
+    // Los dibujos de las zonas ya NO se tocan acá:
+    // se manejan con scripts/sincronizar-config.ts.
 
     console.log(
-      `  ${zona.nombre}: envío $${zona.precio} → $${precio}, mínimo $${zona.compraMinima} → $${COMPRA_MINIMA}${esA ? ", polígono ampliado" : ""}`
+      `  ${zona.nombre}: envío $${zona.precio} → $${precio}, mínimo $${zona.compraMinima} → $${COMPRA_MINIMA}`
     );
 
     if (APLICAR) {
@@ -345,9 +346,6 @@ async function zonas() {
         data: {
           precio,
           compraMinima: COMPRA_MINIMA,
-          ...(esA
-            ? { poligono: POLIGONO_ZONA_A, orden: 1 }
-            : {}),
         },
       });
     }

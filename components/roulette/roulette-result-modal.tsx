@@ -5,7 +5,10 @@ import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
-import { REGLAS } from "@/lib/promociones";
+import {
+  REGLAS,
+  minimoPremioRuleta,
+} from "@/lib/promociones";
 
 interface RouletteResultModalProps {
   prize: {
@@ -74,9 +77,7 @@ export function RouletteResultModal({
             Se aplica automáticamente en tu próximo pedido
             desde{" "}
             {formatPrice(
-              prize.tipo === "ENVIO_GRATIS"
-                ? REGLAS.premioEnvioGratisMinimo
-                : REGLAS.premioMinimo
+              minimoPremioRuleta(prize.tipo)
             )}
             . Válido por {REGLAS.premioVigenciaHoras} horas.
           </p>

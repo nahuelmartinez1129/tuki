@@ -1,0 +1,58 @@
+[
+  {
+    "id": "cms13v0420003kx156frbkq0r",
+    "nombre": "Sin Premio",
+    "tipo": "SIN_PREMIO",
+    "valor": null,
+    "probabilidad": 28,
+    "activo": true
+  },
+  {
+    "id": "cms13v0420006kx1525nmjhsi",
+    "nombre": "5 gomitas de regalo",
+    "tipo": "GOMITAS",
+    "valor": null,
+    "probabilidad": 22,
+    "activo": true
+  },
+  {
+    "id": "cms13v0420002kx15j5mk3oom",
+    "nombre": "$500 OFF",
+    "tipo": "DESCUENTO",
+    "valor": 500,
+    "probabilidad": 15,
+    "activo": true
+  },
+  {
+    "id": "cmupu0q8u0000umwg3ilqwmug",
+    "nombre": "Volvé a Girar",
+    "tipo": "VOLVER_A_GIRAR",
+    "valor": null,
+    "probabilidad": 15,
+    "activo": true
+  },
+  {
+    "id": "cmwra6xua0006umqs8syhdtj0",
+    "nombre": "Guaymallén de regalo",
+    "tipo": "GUAYMALLEN",
+    "valor": null,
+    "probabilidad": 12,
+    "activo": true
+  },
+  {
+    "id": "cms13v0420005kx15q77nun99",
+    "nombre": "Envío Gratis",
+    "tipo": "ENVIO_GRATIS",
+    "valor": null,
+    "probabilidad": 5,
+    "activo": true
+  },
+  {
+    "id": "cms13v0420004kx15glnpf7ok",
+    "nombre": "Alfajor a elección",
+    "tipo": "ALFAJOR",
+    "valor": null,
+    "probabilidad": 3,
+    "activo": true
+  }
+]

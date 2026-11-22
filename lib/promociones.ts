@@ -22,6 +22,9 @@ export const REGLAS = {
   premioVigenciaHoras: 48,
   premioMinimo: 7000,
   premioEnvioGratisMinimo: 10000,
+  // El alfajor a elección cuesta hasta $1.249:
+  // con $7.000 de compra se pierde plata.
+  premioAlfajorMinimo: 10000,
   premioDescuentoFijo: 500,
 
   // Happy Hour
@@ -46,9 +49,18 @@ const VALOR_REGALO: Record<string, number> = {
 
 const TEXTO_REGALO: Record<string, string> = {
   GUAYMALLEN: "Alfajor Guaymallén de regalo",
-  GOMITAS: "5 moritas de regalo",
+  GOMITAS: "5 gomitas de regalo (dientitos o moritas)",
   ALFAJOR: "Alfajor de regalo (a elección, hasta Jorgelín)",
 };
+
+/*
+ * Compra mínima para usar cada premio de la ruleta.
+ */
+export function minimoPremioRuleta(tipo: string) {
+  if (tipo === "ENVIO_GRATIS") return REGLAS.premioEnvioGratisMinimo;
+  if (tipo === "ALFAJOR") return REGLAS.premioAlfajorMinimo;
+  return REGLAS.premioMinimo;
+}
 
 export type OrigenBeneficio =
   | "CUPON"
@@ -211,7 +223,7 @@ function beneficioRuleta(
     case "ALFAJOR":
       return crear(entrada, {
         ...base,
-        minimo: REGLAS.premioMinimo,
+        minimo: minimoPremioRuleta(premio.tipo),
         regalo: TEXTO_REGALO[premio.tipo],
         valorRegalo: VALOR_REGALO[premio.tipo],
       });

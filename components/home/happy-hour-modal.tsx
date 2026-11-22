@@ -76,7 +76,7 @@ export function HappyHourModal() {
     `🍫 ¡Alfajor Guaymallén de regalo en pedidos desde ${formatPrice(REGLAS.happyHourRegaloMinimo)}!`,
 
   GOMITAS:
-    `🍬 ¡5 moritas de regalo en pedidos desde ${formatPrice(REGLAS.happyHourRegaloMinimo)}!`,
+    `🍬 ¡5 gomitas de regalo en pedidos desde ${formatPrice(REGLAS.happyHourRegaloMinimo)}!`,
 
   CAJA_10:
     `📦 ¡${porcentaje}% OFF en Cajas Misteriosas!`,

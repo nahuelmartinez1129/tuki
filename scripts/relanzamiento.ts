@@ -194,16 +194,17 @@ const POLIGONO_ZONA_A = [
  *
  * Costo esperado ≈ $315 por premio canjeado.
  * Todos valen 48 h en compras desde $7.000
- * (envío gratis desde $10.000).
+ * (envío gratis y alfajor a elección desde $10.000).
+ * Ver datos/premios.json (scripts/sincronizar-config.ts).
  */
 const PREMIOS = [
-  { tipo: "SIN_PREMIO", nombre: "Sin Premio", probabilidad: 30, valor: null },
-  { tipo: "VOLVER_A_GIRAR", nombre: "Volvé a Girar", probabilidad: 20, valor: null },
-  { tipo: "GUAYMALLEN", nombre: "Guaymallén de regalo", probabilidad: 20, valor: null },
-  { tipo: "DESCUENTO", nombre: "$500 OFF", probabilidad: 13, valor: 500 },
-  { tipo: "GOMITAS", nombre: "5 moritas de regalo", probabilidad: 12, valor: null },
-  { tipo: "ENVIO_GRATIS", nombre: "Envío Gratis", probabilidad: 3, valor: null },
-  { tipo: "ALFAJOR", nombre: "Alfajor a elección", probabilidad: 2, valor: null },
+  { tipo: "SIN_PREMIO", nombre: "Sin Premio", probabilidad: 28, valor: null },
+  { tipo: "VOLVER_A_GIRAR", nombre: "Volvé a Girar", probabilidad: 15, valor: null },
+  { tipo: "GOMITAS", nombre: "5 gomitas de regalo", probabilidad: 22, valor: null },
+  { tipo: "DESCUENTO", nombre: "$500 OFF", probabilidad: 15, valor: 500 },
+  { tipo: "GUAYMALLEN", nombre: "Guaymallén de regalo", probabilidad: 12, valor: null },
+  { tipo: "ENVIO_GRATIS", nombre: "Envío Gratis", probabilidad: 5, valor: null },
+  { tipo: "ALFAJOR", nombre: "Alfajor a elección", probabilidad: 3, valor: null },
 ];
 
 /*

@@ -1,5 +1,51 @@
 [
   {
+    "id": "cmwrext6i0000umxsa742jjvn",
+    "name": "Combo Antojo",
+    "description": "1 Alfajor Rasta + 1 Guaymallén Triple + 1 Halls + 12 gomitas (dientitos y moritas).",
+    "price": 5900,
+    "compareAtPrice": 6700,
+    "image": "/productos/combo-1.png",
+    "category": "combos",
+    "tags": [
+      "nuevo"
+    ],
+    "stock": 3,
+    "activo": true,
+    "isCombo": true,
+    "orden": -3
+  },
+  {
+    "id": "cmwrext6z0001umxs45wwjxzc",
+    "name": "Combo Noche de Peli",
+    "description": "1 Coca-Cola 500 ml + 1 Alfajor Milka + 1 Tic Tac + 10 gomitas (dientitos y moritas).",
+    "price": 8500,
+    "compareAtPrice": 9400,
+    "image": "/productos/combo-2.png",
+    "category": "combos",
+    "tags": [
+      "top-ventas"
+    ],
+    "stock": 2,
+    "activo": true,
+    "isCombo": true,
+    "orden": -2
+  },
+  {
+    "id": "cmwrext710002umxsfa8vwod2",
+    "name": "Combo Para Compartir",
+    "description": "1 Alfajor Matilda + 1 Milka + 1 Bon o Bon Triple + 1 Jorgelín Negro + 2 Guaymallén simples.",
+    "price": 10900,
+    "compareAtPrice": 12000,
+    "image": "/productos/combo-3.png",
+    "category": "combos",
+    "tags": [],
+    "stock": 2,
+    "activo": true,
+    "isCombo": true,
+    "orden": -1
+  },
+  {
     "id": "cms1h1p1w0000kxqd26f6b97d",
     "name": "Aguila Minitorta Brownie",
     "description": "Alfajor brownie con relleno de dulce de leche y mousse",
@@ -52,7 +98,7 @@
     "image": "/productos/alfajor-bonobon_bg.png",
     "category": "alfajores",
     "tags": [],
-    "stock": 4,
+    "stock": 2,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -114,7 +160,7 @@
     "image": "/productos/guaymallen-blanco_bg.png",
     "category": "alfajores",
     "tags": [],
-    "stock": 6,
+    "stock": 4,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -128,7 +174,7 @@
     "image": "/productos/guaymallen-negro_bg.png",
     "category": "alfajores",
     "tags": [],
-    "stock": 6,
+    "stock": 4,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -158,7 +204,7 @@
     "image": "/productos/matilda.jpeg",
     "category": "alfajores",
     "tags": [],
-    "stock": 5,
+    "stock": 3,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -172,7 +218,7 @@
     "image": "/productos/milka-alf_bg.png",
     "category": "alfajores",
     "tags": [],
-    "stock": 8,
+    "stock": 4,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -248,7 +294,7 @@
     "tags": [
       "recomendado"
     ],
-    "stock": 5,
+    "stock": 2,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -320,7 +366,7 @@
     "image": "/productos/coca-500_bg.png",
     "category": "gaseosas",
     "tags": [],
-    "stock": 4,
+    "stock": 2,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -364,7 +410,7 @@
     "tags": [
       "recomendado"
     ],
-    "stock": 174,
+    "stock": 146,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -470,7 +516,7 @@
     "image": "/productos/guaymallen-triple-blanco_bg.png",
     "category": "alfajores",
     "tags": [],
-    "stock": 2,
+    "stock": 1,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -484,7 +530,7 @@
     "image": "/productos/guaymallen-negro-triple_bg.png",
     "category": "alfajores",
     "tags": [],
-    "stock": 3,
+    "stock": 1,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -498,7 +544,7 @@
     "image": "/productos/halls.jpeg",
     "category": "gomitas",
     "tags": [],
-    "stock": 12,
+    "stock": 9,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -570,7 +616,7 @@
     "image": "/productos/jorgelin-negro.jpeg",
     "category": "alfajores",
     "tags": [],
-    "stock": 3,
+    "stock": 1,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -698,7 +744,7 @@
     "image": "/productos/moritas.jpeg",
     "category": "gomitas",
     "tags": [],
-    "stock": 166,
+    "stock": 138,
     "activo": true,
     "isCombo": false,
     "orden": 0
@@ -910,7 +956,7 @@
     "image": "/productos/tic-tac.jpeg",
     "category": "gomitas",
     "tags": [],
-    "stock": 12,
+    "stock": 10,
     "activo": true,
     "isCombo": false,
     "orden": 0

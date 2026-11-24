@@ -3496,7 +3496,7 @@
     "nombre": "Zona G",
     "precio": 2000,
     "compraMinima": 5000,
-    "activo": true,
+    "activo": false,
     "orden": 7,
     "poligono": [
       {
@@ -4738,7 +4738,7 @@
     "nombre": "Zona H",
     "precio": 2000,
     "compraMinima": 5000,
-    "activo": true,
+    "activo": false,
     "orden": 8,
     "poligono": [
       {

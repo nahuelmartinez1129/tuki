@@ -476,8 +476,10 @@ export function RouletteSection() {
   );
 }
 /*
- * "hoy a las 21:00 (en 2 h 15 min)" o
- * "mañana a las 21:00 (en 23 h 40 min)".
+ * "hoy a las 21:00 (en 2 h 15 min)",
+ * "mañana a las 21:00 (en 23 h 40 min)" o
+ * "pasado mañana a las 21:00" (si giró
+ * pasada la medianoche).
  *
  * "Hoy" y "mañana" se calculan en hora de
  * Argentina, no del celular del cliente.
@@ -492,9 +494,17 @@ function textoProximoGiro(
         "America/Argentina/Buenos_Aires",
     });
 
-  const esHoy =
-    diaArgentina(fecha) ===
-    diaArgentina(new Date());
+  const ahora = new Date();
+  const manana = new Date(
+    ahora.getTime() + 24 * 60 * 60 * 1000
+  );
+
+  const cuando =
+    diaArgentina(fecha) === diaArgentina(ahora)
+      ? "hoy"
+      : diaArgentina(fecha) === diaArgentina(manana)
+        ? "mañana"
+        : "pasado mañana";
 
   const totalMinutos = Math.max(
     1,
@@ -508,7 +518,5 @@ function textoProximoGiro(
       ? `${horas} h ${minutos} min`
       : `${minutos} min`;
 
-  return `Vuelve ${
-    esHoy ? "hoy" : "mañana"
-  } a las 21:00 (en ${falta})`;
+  return `Vuelve ${cuando} a las 21:00 (en ${falta})`;
 }

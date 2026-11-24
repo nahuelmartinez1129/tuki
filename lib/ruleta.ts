@@ -3,16 +3,17 @@
  * HORARIO DE LA RULETA
  * ==========================================
  *
- * La ruleta se reinicia TODOS LOS DÍAS a las
- * 21:00 de Argentina. Cada usuario puede girar
- * una vez por "noche": desde las 21:00 de un
- * día hasta las 20:59 del día siguiente.
+ * Cada usuario puede girar UNA VEZ POR DÍA.
+ * Después de girar, la ruleta se vuelve a
+ * habilitar a las 21:00 (Argentina) del día
+ * siguiente al giro, sin importar a qué hora
+ * giró.
  *
  * Ejemplos:
- * - Gira a las 20:30 → puede volver a las 21:00
- *   de ese mismo día.
- * - Gira a las 21:05 → puede volver a las 21:00
- *   del día siguiente.
+ * - Gira el lunes 20:30 → vuelve el martes 21:00.
+ * - Gira el lunes 21:05 → vuelve el martes 21:00.
+ * - Gira el martes 00:30 (pasada la medianoche)
+ *   → vuelve el miércoles 21:00.
  *
  * Argentina usa UTC-3 todo el año (no tiene
  * horario de verano), así que las 21:00 de
@@ -26,8 +27,7 @@ const OFFSET_ARGENTINA_MS = 3 * 60 * 60 * 1000;
 const DIA_MS = 24 * 60 * 60 * 1000;
 
 /*
- * Primer reinicio (21:00 Argentina) posterior
- * al giro.
+ * 21:00 (Argentina) del día siguiente al giro.
  */
 export function proximoReinicioRuleta(
   ultimoGiro: Date
@@ -47,11 +47,7 @@ export function proximoReinicioRuleta(
       HORA_REINICIO_RULETA
     ) + OFFSET_ARGENTINA_MS;
 
-  return new Date(
-    ultimoGiro.getTime() < reinicioMismoDia
-      ? reinicioMismoDia
-      : reinicioMismoDia + DIA_MS
-  );
+  return new Date(reinicioMismoDia + DIA_MS);
 }
 
 /*

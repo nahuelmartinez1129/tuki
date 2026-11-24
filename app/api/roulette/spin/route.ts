@@ -272,7 +272,7 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "Ya giraste esta noche. La ruleta se reinicia todos los días a las 21:00.",
+            "Ya giraste hoy. La ruleta se vuelve a habilitar al día siguiente a las 21:00.",
 
           nextReset:
             bloqueo.proximoReinicio?.toISOString(),

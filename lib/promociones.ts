@@ -49,7 +49,7 @@ const VALOR_REGALO: Record<string, number> = {
 
 const TEXTO_REGALO: Record<string, string> = {
   GUAYMALLEN: "Alfajor Guaymallén de regalo",
-  GOMITAS: "5 gomitas de regalo (dientitos o moritas)",
+  GOMITAS: "Gomitas de regalo (dientitos o moritas)",
   ALFAJOR: "Alfajor de regalo (a elección, hasta Jorgelín)",
 };
 

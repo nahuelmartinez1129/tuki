@@ -9,18 +9,10 @@
   },
   {
     "id": "cms13v0420006kx1525nmjhsi",
-    "nombre": "5 gomitas de regalo",
+    "nombre": "Gomitas de regalo",
     "tipo": "GOMITAS",
     "valor": null,
     "probabilidad": 22,
-    "activo": true
-  },
-  {
-    "id": "cms13v0420002kx15j5mk3oom",
-    "nombre": "$500 OFF",
-    "tipo": "DESCUENTO",
-    "valor": 500,
-    "probabilidad": 15,
     "activo": true
   },
   {
@@ -28,6 +20,14 @@
     "nombre": "Volvé a Girar",
     "tipo": "VOLVER_A_GIRAR",
     "valor": null,
+    "probabilidad": 15,
+    "activo": true
+  },
+  {
+    "id": "cms13v0420002kx15j5mk3oom",
+    "nombre": "$500 OFF",
+    "tipo": "DESCUENTO",
+    "valor": 500,
     "probabilidad": 15,
     "activo": true
   },

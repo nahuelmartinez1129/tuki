@@ -200,7 +200,7 @@ const POLIGONO_ZONA_A = [
 const PREMIOS = [
   { tipo: "SIN_PREMIO", nombre: "Sin Premio", probabilidad: 28, valor: null },
   { tipo: "VOLVER_A_GIRAR", nombre: "Volvé a Girar", probabilidad: 15, valor: null },
-  { tipo: "GOMITAS", nombre: "5 gomitas de regalo", probabilidad: 22, valor: null },
+  { tipo: "GOMITAS", nombre: "Gomitas de regalo", probabilidad: 22, valor: null },
   { tipo: "DESCUENTO", nombre: "$500 OFF", probabilidad: 15, valor: 500 },
   { tipo: "GUAYMALLEN", nombre: "Guaymallén de regalo", probabilidad: 12, valor: null },
   { tipo: "ENVIO_GRATIS", nombre: "Envío Gratis", probabilidad: 5, valor: null },

@@ -9,11 +9,17 @@
  * siguiente al giro, sin importar a qué hora
  * giró.
  *
+ * Los giros de madrugada (antes de las 06:00)
+ * cuentan como parte de la noche anterior.
+ *
  * Ejemplos:
  * - Gira el lunes 20:30 → vuelve el martes 21:00.
  * - Gira el lunes 21:05 → vuelve el martes 21:00.
- * - Gira el martes 00:30 (pasada la medianoche)
- *   → vuelve el miércoles 21:00.
+ * - Gira el martes 00:30 (madrugada, cuenta
+ *   como la noche del lunes) → vuelve el
+ *   martes 21:00.
+ * - Gira el martes 06:00 → vuelve el
+ *   miércoles 21:00.
  *
  * Argentina usa UTC-3 todo el año (no tiene
  * horario de verano), así que las 21:00 de
@@ -26,6 +32,10 @@ export const HORA_REINICIO_RULETA = 21;
 const OFFSET_ARGENTINA_MS = 3 * 60 * 60 * 1000;
 const DIA_MS = 24 * 60 * 60 * 1000;
 
+// Hasta esta hora, un giro cuenta como de la
+// noche anterior.
+export const HORA_FIN_MADRUGADA = 6;
+
 /*
  * 21:00 (Argentina) del día siguiente al giro.
  */
@@ -33,12 +43,16 @@ export function proximoReinicioRuleta(
   ultimoGiro: Date
 ): Date {
   // Hora "de pared" en Argentina, expresada
-  // como si fuera UTC.
+  // como si fuera UTC, corrida 6 horas para
+  // atrás: así la madrugada cae en el día
+  // anterior.
   const enArgentina = new Date(
-    ultimoGiro.getTime() - OFFSET_ARGENTINA_MS
+    ultimoGiro.getTime() -
+      OFFSET_ARGENTINA_MS -
+      HORA_FIN_MADRUGADA * 60 * 60 * 1000
   );
 
-  // Las 21:00 de Argentina de ese mismo día.
+  // Las 21:00 de Argentina de ese día.
   const reinicioMismoDia =
     Date.UTC(
       enArgentina.getUTCFullYear(),

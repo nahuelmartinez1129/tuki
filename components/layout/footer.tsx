@@ -13,9 +13,9 @@ const FOOTER_LINKS = [
   {
     title: "Tuki",
     links: [
-      { label: "Cómo funciona", href: "#" },
-      { label: "Zonas de envío", href: "#" },
-      { label: "Preguntas frecuentes", href: "#" },
+      { label: "Cómo funciona", href: "/como-funciona" },
+      { label: "Zonas de envío", href: "/zonas-envio" },
+      { label: "Preguntas frecuentes", href: "/preguntas-frecuentes" },
     ],
   },
 ];

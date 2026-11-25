@@ -25,9 +25,9 @@
   },
   {
     "id": "cms13v0420002kx15j5mk3oom",
-    "nombre": "$500 OFF",
-    "tipo": "DESCUENTO",
-    "valor": 500,
+    "nombre": "10% OFF",
+    "tipo": "PORCENTAJE",
+    "valor": 10,
     "probabilidad": 15,
     "activo": true
   },

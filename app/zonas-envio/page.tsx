@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { InfoCard, InfoPage } from "@/components/layout/info-page";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/format";
+import { REGLAS } from "@/lib/promociones";
 
 export const metadata: Metadata = {
   title: "Zonas de envío | Tuki",
@@ -124,6 +125,11 @@ export default async function ZonasEnvioPage() {
           En este momento no tenemos zonas de envío habilitadas.
         </InfoCard>
       )}
+
+      <InfoCard titulo="🚲 Envío gratis">
+        En pedidos desde {formatPrice(REGLAS.envioGratisDesde)}, el envío es
+        gratis en todas nuestras zonas.
+      </InfoCard>
 
       <InfoCard titulo="¿Llegamos a tu casa?">
         Cargá tu dirección en el checkout y te confirmamos al instante si

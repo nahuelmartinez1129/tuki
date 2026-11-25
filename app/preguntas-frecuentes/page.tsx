@@ -3,6 +3,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { InfoPage } from "@/components/layout/info-page";
+import { formatPrice } from "@/lib/format";
+import { REGLAS } from "@/lib/promociones";
 
 export const metadata: Metadata = {
   title: "Preguntas frecuentes | Tuki",
@@ -25,6 +27,12 @@ const PREGUNTAS: { pregunta: string; respuesta: ReactNode }[] = [
     pregunta: "¿Hay compra mínima?",
     respuesta:
       "Sí, la compra mínima y el costo del envío dependen de tu zona. Los ves antes de confirmar el pedido.",
+  },
+  {
+    pregunta: "¿Tienen envío gratis?",
+    respuesta: `Sí: en pedidos desde ${formatPrice(
+      REGLAS.envioGratisDesde
+    )} el envío es gratis en todas nuestras zonas, y se suma a cualquier promo.`,
   },
   {
     pregunta: "¿Cómo puedo pagar?",

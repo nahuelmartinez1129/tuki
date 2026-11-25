@@ -18,20 +18,34 @@ export const REGLAS = {
   bienvenidaDescuento: 1000,
   bienvenidaMinimo: 8000,
 
+  // Envío gratis para cualquier pedido desde
+  // este subtotal (productos), en cualquier zona
+  // activa. No es una promo: se suma a cualquier
+  // beneficio.
+  envioGratisDesde: 10000,
+
   // Premios de la ruleta
   premioVigenciaHoras: 48,
+  // Mínimo por defecto ($ OFF fijo, Caja 10%)
   premioMinimo: 7000,
-  premioEnvioGratisMinimo: 10000,
-  // El alfajor a elección cuesta hasta $1.249:
-  // con $7.000 de compra se pierde plata.
-  premioAlfajorMinimo: 10000,
+  // Gomitas y Guaymallén (regalos baratos)
+  premioRegaloMinimo: 6000,
+  // % OFF sin tope: con $7.000 el descuento es
+  // de $700 o más y sube con el pedido.
+  premioPorcentajeMinimo: 7000,
+  premioEnvioGratisMinimo: 7000,
+  // El alfajor a elección cuesta hasta $1.249.
+  premioAlfajorMinimo: 9000,
   premioDescuentoFijo: 500,
 
   // Happy Hour
   happyHourRegaloMinimo: 6000,
   happyHourDescuentoMinimo: 8000,
   happyHourDescuentoMaxPorcentaje: 10,
-  happyHourEnvioGratisMinimo: 12000,
+  // Igual que el regalo: el Happy Hour se usa en
+  // horas sin movimiento, así que conviene que
+  // sea fácil de alcanzar.
+  happyHourEnvioGratisMinimo: 6000,
 
   // Tope general de cualquier descuento sobre productos
   descuentoMaxPorcentaje: 15,
@@ -59,7 +73,17 @@ const TEXTO_REGALO: Record<string, string> = {
 export function minimoPremioRuleta(tipo: string) {
   if (tipo === "ENVIO_GRATIS") return REGLAS.premioEnvioGratisMinimo;
   if (tipo === "ALFAJOR") return REGLAS.premioAlfajorMinimo;
+  if (tipo === "GOMITAS" || tipo === "GUAYMALLEN")
+    return REGLAS.premioRegaloMinimo;
+  if (tipo === "PORCENTAJE") return REGLAS.premioPorcentajeMinimo;
   return REGLAS.premioMinimo;
+}
+
+/*
+ * ¿El pedido tiene envío gratis por monto?
+ */
+export function envioGratisPorMonto(subtotal: number) {
+  return subtotal >= REGLAS.envioGratisDesde;
 }
 
 export type OrigenBeneficio =
@@ -211,6 +235,19 @@ function beneficioRuleta(
             : REGLAS.premioDescuentoFijo,
       });
 
+    case "PORCENTAJE":
+      // % OFF sobre todo el pedido, sin tope.
+      return crear(entrada, {
+        ...base,
+        minimo: REGLAS.premioPorcentajeMinimo,
+        descuento:
+          entrada.subtotal *
+          ((premio.valor && premio.valor > 0
+            ? premio.valor
+            : 10) /
+            100),
+      });
+
     case "CAJA_10":
       return crear(entrada, {
         ...base,
@@ -346,8 +383,21 @@ function beneficioCupon(
  * disponibles (incluido el cupón que cargó).
  */
 export function calcularBeneficios(
-  entrada: EntradaBeneficios
+  entradaOriginal: EntradaBeneficios
 ): ResultadoBeneficios {
+  /*
+   * Envío gratis por monto: va primero y no
+   * cuenta como beneficio. Así un premio de
+   * "envío gratis" no le gana a un descuento
+   * cuando el envío ya es gratis.
+   */
+  const entrada: EntradaBeneficios = {
+    ...entradaOriginal,
+    envio: envioGratisPorMonto(entradaOriginal.subtotal)
+      ? 0
+      : entradaOriginal.envio,
+  };
+
   const candidatos: Beneficio[] = [];
 
   if (entrada.cupon) {
@@ -385,8 +435,11 @@ export function calcularBeneficios(
     if (beneficio) candidatos.push(beneficio);
   }
 
+  // Un beneficio que no ahorra nada (ej.: premio
+  // de envío gratis cuando el envío ya es gratis)
+  // no se usa, así el cliente no gasta el premio.
   const aplicables = candidatos.filter(
-    (c) => c.aplica
+    (c) => c.aplica && c.ahorro > 0
   );
 
   /*

@@ -21,6 +21,7 @@ import { useCart } from "@/hooks/use-cart";
 import {
   calcularBeneficios,
   esCajaMisteriosa,
+  REGLAS,
   type CuponValido,
   type PremioRuleta,
 } from "@/lib/promociones";
@@ -1834,6 +1835,22 @@ export default function CheckoutPage() {
                     </span>
                   )}
                 </div>
+
+                {/* CUÁNTO FALTA PARA ENVÍO GRATIS */}
+
+                {zonaEnvio &&
+                  delivery > 0 &&
+                  subtotal <
+                    REGLAS.envioGratisDesde && (
+                    <p className="text-xs text-tuki-lime">
+                      🚲 Sumá{" "}
+                      {formatPrice(
+                        REGLAS.envioGratisDesde -
+                          subtotal
+                      )}{" "}
+                      más y el envío es gratis.
+                    </p>
+                  )}
 
                 {/* BENEFICIO APLICADO */}
 

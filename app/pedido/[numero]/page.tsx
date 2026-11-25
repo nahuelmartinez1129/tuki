@@ -121,6 +121,9 @@ function traducirBeneficio(tipo: string) {
     case "DESCUENTO":
       return "🏷️ 10% OFF";
 
+    case "PORCENTAJE":
+      return "🏷️ 10% OFF";
+
     case "GUAYMALLEN":
       return "🍫 ¡Alfajor Guaymallén gratis! en tu próxima compra";
 

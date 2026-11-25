@@ -122,6 +122,7 @@ function getEmoji(tipo: string) {
       return "🚀";
 
     case "DESCUENTO":
+    case "PORCENTAJE":
       return "🏷️";
 
     case "ALFAJOR":

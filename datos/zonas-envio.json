@@ -2,7 +2,7 @@
   {
     "id": "cmtvp73om0001umx0qhncnoe1",
     "nombre": "Zona A",
-    "precio": 1500,
+    "precio": 800,
     "compraMinima": 5000,
     "activo": true,
     "orden": 1,
@@ -268,7 +268,7 @@
   {
     "id": "cmtvpby470002umx0dhi4qo8y",
     "nombre": "Zona B",
-    "precio": 1500,
+    "precio": 800,
     "compraMinima": 5000,
     "activo": true,
     "orden": 2,

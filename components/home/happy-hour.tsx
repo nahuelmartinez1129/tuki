@@ -2,6 +2,8 @@
 
 import { Sparkles } from "lucide-react";
 
+import { textoHappyHour } from "@/lib/promociones";
+
 import {
   useEffect,
   useState,
@@ -62,6 +64,17 @@ const isActive =
     <span>
       {happyHour.descripcion}
     </span>
+
+    {/*
+      * El mínimo de compra se agrega solo
+      * (lib/promociones.ts), así no depende
+      * de lo que se escriba en la descripción.
+      */}
+    {textoHappyHour(happyHour) && (
+      <span className="rounded-full bg-tuki-night/30 px-2 py-0.5">
+        {textoHappyHour(happyHour)}
+      </span>
+    )}
   </p>
 ) : (
           <p className="flex items-center justify-center gap-1.5 font-display text-xs font-bold text-tuki-cream/80 sm:text-sm">

@@ -80,6 +80,50 @@ export function minimoPremioRuleta(tipo: string) {
 }
 
 /*
+ * Compra mínima de cada tipo de Happy Hour.
+ * 0 = sin mínimo (Caja Misteriosa).
+ */
+export function minimoHappyHour(tipo: string) {
+  if (tipo === "ENVIO_GRATIS") return REGLAS.happyHourEnvioGratisMinimo;
+  if (tipo === "DESCUENTO") return REGLAS.happyHourDescuentoMinimo;
+  if (tipo === "GUAYMALLEN" || tipo === "GOMITAS")
+    return REGLAS.happyHourRegaloMinimo;
+  return 0;
+}
+
+/*
+ * Texto del beneficio de un Happy Hour con su
+ * compra mínima. Lo usan el cartel y el banner
+ * del inicio, así siempre coinciden con lo que
+ * se cobra en el checkout.
+ */
+export function textoHappyHour(happyHour: {
+  tipo: string;
+  valor?: number | null;
+}) {
+  const minimo = formatear(minimoHappyHour(happyHour.tipo));
+  const porcentaje = Math.min(
+    happyHour.valor ?? 10,
+    REGLAS.happyHourDescuentoMaxPorcentaje
+  );
+
+  switch (happyHour.tipo) {
+    case "ENVIO_GRATIS":
+      return `🚚 Envío gratis en pedidos desde ${minimo}`;
+    case "DESCUENTO":
+      return `💸 ${porcentaje}% de descuento en pedidos desde ${minimo}`;
+    case "GUAYMALLEN":
+      return `🍫 Alfajor Guaymallén de regalo en pedidos desde ${minimo}`;
+    case "GOMITAS":
+      return `🍬 Gomitas de regalo en pedidos desde ${minimo}`;
+    case "CAJA_10":
+      return `📦 ${porcentaje}% OFF en Cajas Misteriosas`;
+    default:
+      return null;
+  }
+}
+
+/*
  * ¿El pedido tiene envío gratis por monto?
  */
 export function envioGratisPorMonto(subtotal: number) {

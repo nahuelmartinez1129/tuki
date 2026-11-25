@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { textoHappyHour } from "@/lib/promociones";
+
 type HappyHour = {
   id: string;
   titulo: string;
@@ -659,10 +661,25 @@ export default function HappyHourPage() {
                   e.target.value
                 )
               }
-              placeholder="Ej: ¡Envío gratis durante toda la noche!"
+              placeholder="Ej: ¡Envío gratis hasta las 22:30 hs!"
               rows={3}
               className="w-full resize-none rounded-2xl border border-white/10 bg-tuki-night px-4 py-3 text-tuki-cream outline-none transition placeholder:text-tuki-cream/30 focus:border-tuki-lime"
             />
+
+            <p className="mt-2 text-xs text-tuki-cream/50">
+              No hace falta escribir la compra mínima: la web la
+              agrega sola en el banner y en el cartel
+              {textoHappyHour({
+                tipo: form.tipo,
+                valor: Number(form.valor) || null,
+              })
+                ? ` («${textoHappyHour({
+                    tipo: form.tipo,
+                    valor: Number(form.valor) || null,
+                  })}»)`
+                : ""}
+              .
+            </p>
           </div>
 
           {/* TIPO */}
@@ -867,6 +884,12 @@ export default function HappyHourPage() {
                     <p className="mt-2 text-sm text-tuki-cream/60">
                       {happyHour.descripcion}
                     </p>
+
+                    {textoHappyHour(happyHour) && (
+                      <p className="mt-1 text-xs text-tuki-lime/80">
+                        Se muestra: {textoHappyHour(happyHour)}
+                      </p>
+                    )}
                   </div>
 
                   {/* ACCIONES */}

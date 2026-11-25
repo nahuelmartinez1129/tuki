@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
-import { formatPrice } from "@/lib/format";
-import { REGLAS } from "@/lib/promociones";
+import { textoHappyHour } from "@/lib/promociones";
 
 type HappyHour = {
   id: string;
@@ -53,34 +52,11 @@ export function HappyHourModal() {
   }
 
   /*
-   * Los mínimos salen de lib/promociones.ts,
-   * así el cartel siempre coincide con lo
-   * que se cobra en el checkout.
+   * El texto y el mínimo salen de
+   * lib/promociones.ts, así el cartel siempre
+   * coincide con lo que se cobra en el checkout.
    */
-  const porcentaje = Math.min(
-    happyHour.valor ?? 10,
-    REGLAS.happyHourDescuentoMaxPorcentaje
-  );
-
-  const messages: Record<
-  string,
-  string
-> = {
-  ENVIO_GRATIS:
-    `🚚 ¡Envío gratis en pedidos desde ${formatPrice(REGLAS.happyHourEnvioGratisMinimo)}!`,
-
-  DESCUENTO:
-    `💸 ¡${porcentaje}% de descuento en pedidos desde ${formatPrice(REGLAS.happyHourDescuentoMinimo)}!`,
-
-  GUAYMALLEN:
-    `🍫 ¡Alfajor Guaymallén de regalo en pedidos desde ${formatPrice(REGLAS.happyHourRegaloMinimo)}!`,
-
-  GOMITAS:
-    `🍬 ¡Gomitas de regalo en pedidos desde ${formatPrice(REGLAS.happyHourRegaloMinimo)}!`,
-
-  CAJA_10:
-    `📦 ¡${porcentaje}% OFF en Cajas Misteriosas!`,
-};
+  const texto = textoHappyHour(happyHour);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4">
@@ -94,11 +70,7 @@ export function HappyHourModal() {
         </p>
 
         <p className="mt-3 text-sm text-tuki-cream/80">
-          {
-            messages[
-              happyHour.tipo
-            ]
-          }
+          {texto}
         </p>
 
         <p className="mt-5 text-xs text-tuki-cream/60">
